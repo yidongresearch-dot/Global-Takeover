@@ -1,8 +1,10 @@
 workflows:
   android-build:
-    name: Build Android App Bundle
+    name: Build Signed Android App Bundle
     max_build_duration: 30
     environment:
+      android_signing:
+        - release_key
       node: 20
       java: 17
     scripts:
@@ -12,7 +14,7 @@ workflows:
         script: npx cap add android
       - name: Sync Web Files to Android
         script: npx cap sync android
-      - name: Build Release App Bundle
+      - name: Build Signed Release App Bundle
         script: |
           cd android
           ./gradlew bundleRelease
