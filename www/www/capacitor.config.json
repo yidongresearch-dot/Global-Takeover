@@ -1,0 +1,6 @@
+{
+  "appId": "com.globaltakeover.game",
+  "appName": "Global Takeover",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
