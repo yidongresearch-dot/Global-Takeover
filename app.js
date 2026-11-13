@@ -12,6 +12,7 @@ function loadData() {
   } catch (e) {}
   syncEnergy();
 }
+
 function saveData() {
   try {
     localStorage.setItem('gt_lvl', lvl);
@@ -49,6 +50,7 @@ window.buyUpgrade = function(k) {
     stars -= upg[k]; upg[k]++; saveData(); updateUI();
   }
 };
+
 const THEATRES = ["Heartland Basin", "Sunscorched Dunes", "Frostfang Tundra", "Emerald Delta", "Crimson Canyon", "Shattered Coast"];
 const BIOMES = [
   { bg: "#86efac", shore: "#fef08a", accent: "#22c55e", type: "grass" },
@@ -91,13 +93,14 @@ window.startBattle = function() {
   saveData();
   openGame('state-page');
 };
+
 window.openGame = function(id) {
+  if (loop) clearInterval(loop);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   updateUI();
   if (id === 'state-page') setTimeout(initGame, 50);
 };
-
 function pointInPoly(pt, vs) {
   let x = pt.x, y = pt.y, inside = false;
   for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
@@ -106,6 +109,7 @@ function pointInPoly(pt, vs) {
   }
   return inside;
 }
+
 function makeContinent(W, H) {
   let pts = [], steps = 28, p1 = Math.random() * 6, p2 = Math.random() * 6, p3 = Math.random() * 6;
   for (let i = 0; i < steps; i++) {
@@ -115,6 +119,7 @@ function makeContinent(W, H) {
   }
   return pts;
 }
+
 function carveMap(seeds, islandPoly) {
   return seeds.map((s, idx) => {
     let poly = islandPoly.map(p => ({ x: p.x, y: p.y }));
@@ -136,8 +141,9 @@ function carveMap(seeds, islandPoly) {
     return poly;
   });
 }
+
 let canvas, ctx, nodes = [], troops = [], selectedChain = [], dragPos = null, loop, aiTick = 0, won = false;
-let island = [], biome = BIOMES[0], props = [], river = [];
+let island = [], biome = BIOMES.at(0), props = [], river = [];
 
 function initGame() {
   canvas = document.getElementById('stateCanvas');
@@ -150,7 +156,6 @@ function initGame() {
   let name = THEATRES[(lvl - 1) % THEATRES.length];
   biome = BIOMES[(lvl - 1) % BIOMES.length];
   document.getElementById('game-status').textContent = `Lvl ${lvl}: ${name}`;
-
   island = makeContinent(W, H);
 
   let rAng = Math.random() * Math.PI * 2, rPhase = Math.random() * 6;
@@ -158,11 +163,10 @@ function initGame() {
   for (let i = 0; i <= 20; i++) {
     let t = (i / 20) - 0.5;
     let perp = Math.sin(t * 9 + rPhase) * 0.06;
-    let rx = t * Math.cos(rAng) - perp * Math.sin(rAng);
-    let ry = t * Math.sin(rAng) + perp * Math.cos(rAng);
-    river.push({ x: (0.5 + rx) * W, y: (0.5 + ry) * H });
+    river.push({ x: (0.5 + t * Math.cos(rAng) - perp * Math.sin(rAng)) * W, y: (0.5 + t * Math.sin(rAng) + perp * Math.cos(rAng)) * H });
   }
-    props = [];
+
+  props = [];
   for (let i = 0; i < 36; i++) {
     let px = (0.15 + Math.random() * 0.7) * W, py = (0.15 + Math.random() * 0.7) * H;
     if (pointInPoly({ x: px, y: py }, island)) {
@@ -170,15 +174,14 @@ function initGame() {
     }
   }
 
-  let count = Math.min(8, 5 + Math.floor(lvl / 2));
-  let rot = Math.random() * Math.PI * 2;
-  let seeds = [];
+  let count = Math.min(8, 5 + Math.floor(lvl / 2)), rot = Math.random() * Math.PI * 2, seeds = [];
   for (let i = 0; i < count; i++) {
     let ang = rot + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
     let rad = i === 0 ? 0.05 : 0.23 + Math.random() * 0.06;
     seeds.push({ x: (0.5 + Math.cos(ang) * rad) * W, y: (0.5 + Math.sin(ang) * rad) * H });
   }
-   let polys = carveMap(seeds, island);
+
+  let polys = carveMap(seeds, island);
   let indices = seeds.map((_, i) => i).sort(() => Math.random() - 0.5);
   let enemyCount = Math.min(3, 1 + Math.floor(lvl / 2));
 
@@ -194,225 +197,199 @@ function initGame() {
     }
     return { id: i, x: cx, y: cy, pts, team, color, count: cnt, max };
   });
-   function getHitNode(pt) {
+
+  function getHitNode(pt) {
     return nodes.find(n => (n.pts.length && pointInPoly(pt, n.pts)) || Math.hypot(n.x - pt.x, n.y - pt.y) < 35);
   }
 
   canvas.ontouchstart = function(e) {
     e.preventDefault();
-    if (!e.touches || !e.touches.length) return;
+    let t = e.touches && e.touches.item(0);
+    if (!t) return;
     let r = canvas.getBoundingClientRect();
-    let pt = { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+    let pt = { x: t.clientX - r.left, y: t.clientY - r.top };
     let hit = getHitNode(pt);
     if (hit && hit.team === 'player') { selectedChain = [hit]; dragPos = pt; }
   };
-   canvas.ontouchmove = function(e) {
+
+  canvas.ontouchmove = function(e) {
     e.preventDefault();
-    if (!selectedChain.length || !e.touches || !e.touches.length) return;
+    let t = e.touches && e.touches.item(0);
+    if (!selectedChain.length || !t) return;
     let r = canvas.getBoundingClientRect();
-    let pt = { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
-    dragPos = pt;
-    let hit = getHitNode(pt);
+    dragPos = { x: t.clientX - r.left, y: t.clientY - r.top };
+    let hit = getHitNode(dragPos);
     if (hit && hit.team === 'player' && !selectedChain.includes(hit)) selectedChain.push(hit);
   };
-  canvas.ontouchend = function() {
+
+  canvas.ontouchend = function(e) {
+    e.preventDefault();
     if (selectedChain.length && dragPos) {
       let target = getHitNode(dragPos);
-      if (target) selectedChain.forEach(src => { if (src.id !== target.id && src.team === 'player') sendTroops(src, target); });
+      if (target) selectedChain.forEach(src => { if (src !== target) sendTroops(src, target); });
     }
     selectedChain = []; dragPos = null;
   };
 
   if (loop) clearInterval(loop);
-  loop = setInterval(tick, 33);
+  loop = setInterval(updateGame, 40);
 }
-function sendTroops(src, dst) {
-  let dots = Math.floor((src.count * 0.5) / 5);
-  if (dots <= 0) return;
-  src.count -= dots * 5;
-  let spd = src.team === 'player' ? 3.2 + (upg.speed - 1) * 0.7 : 3.2;
-  for (let i = 0; i < dots; i++) {
-    troops.push({ x: src.x + (Math.random() * 10 - 5), y: src.y + (Math.random() * 10 - 5), dst, team: src.team, color: src.color, spd, delay: i * 2 });
+
+function sendTroops(src, target) {
+  let amount = Math.floor(src.count * 0.65);
+  if (amount <= 0) return;
+  src.count -= amount;
+  let spd = (src.team === 'player' ? 3.2 + (upg.speed - 1) * 0.45 : 3.0);
+  let waves = Math.min(18, Math.max(4, Math.ceil(amount / 20)));
+  let perDot = amount / waves;
+  for (let i = 0; i < waves; i++) {
+    setTimeout(() => {
+      if (src && target) {
+        troops.push({ x: src.x + (Math.random() - 0.5) * 14, y: src.y + (Math.random() - 0.5) * 14, target, team: src.team, color: src.color, val: perDot, spd });
+      }
+    }, i * 55);
   }
 }
-function drawScenery() {
+function updateGame() {
   let W = canvas.width, H = canvas.height;
   ctx.fillStyle = "#38bdf8";
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = "rgba(255,255,255,0.22)";
-  ctx.lineWidth = 2;
-  for (let y = 25; y < H; y += 38) {
+
+  if (island.length) {
     ctx.beginPath();
-    for (let x = 15; x < W - 15; x += 45) {
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + 12, y - 5, x + 24, y);
-    }
-    ctx.stroke();
+    island.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.closePath();
+    ctx.lineWidth = 18; ctx.strokeStyle = biome.shore; ctx.stroke();
+    ctx.fillStyle = biome.bg; ctx.fill();
   }
-if (!island.length) return;
-ctx.save();
-ctx.beginPath();
-ctx.moveTo(island[0].x, island[0].y);
-for (let i = 1; i < island.length; i++) ctx.lineTo(island[i].x, island[i].y);
-ctx.closePath();
-ctx.lineWidth = 14;
-ctx.strokeStyle = "rgba(255,255,255,0.45)";
-ctx.stroke();
-ctx.lineWidth = 7;
-ctx.strokeStyle = biome.shore;
-ctx.stroke();
-ctx.fillStyle = biome.bg;
-ctx.fill();
-ctx.clip();
-if (river.length) {
-ctx.beginPath();
-ctx.moveTo(river[0].x, river[0].y);
-for (let i = 1; i < river.length; i++) ctx.lineTo(river[i].x, river[i].y);
-ctx.strokeStyle = "#38bdf8";
-ctx.lineWidth = 9;
-ctx.lineCap = "round";
-ctx.stroke();
+
+  if (river.length) {
+    ctx.save();
+    ctx.beginPath();
+    island.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.clip();
+    ctx.beginPath();
+    river.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 9; ctx.lineCap = "round"; ctx.stroke();
+    ctx.restore();
+  }
+
+  props.forEach(pr => {
+    ctx.fillStyle = pr.kind === 'mtn' ? "rgba(100,116,139,0.35)" : biome.accent;
+    ctx.beginPath();
+    if (pr.kind === 'mtn') {
+      ctx.moveTo(pr.x, pr.y - pr.sz); ctx.lineTo(pr.x + pr.sz, pr.y + pr.sz); ctx.lineTo(pr.x - pr.sz, pr.y + pr.sz);
+    } else {
+      ctx.arc(pr.x, pr.y, pr.sz * 0.65, 0, Math.PI * 2);
+    }
+    ctx.fill();
+  });
+
+  aiTick++;
+  nodes.forEach(n => {
+    if (n.team !== 'neutral' && n.count < n.max) {
+      let rate = n.team === 'player' ? 0.35 + (upg.repro - 1) * 0.12 : 0.32 + lvl * 0.02;
+      n.count = Math.min(n.max, n.count + rate);
+    }
+    if (n.pts.length) {
+      ctx.beginPath();
+      n.pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+      ctx.closePath();
+      ctx.fillStyle = n.team === 'neutral' ? 'rgba(255,255,255,0.22)' : n.color + '55';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = n.team === 'neutral' ? 'rgba(15,23,42,0.25)' : n.color;
+      ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(n.x, n.y, 20, 0, Math.PI * 2);
+    ctx.fillStyle = n.color; ctx.fill();
+    ctx.lineWidth = selectedChain.includes(n) ? 4 : 2.5;
+    ctx.strokeStyle = selectedChain.includes(n) ? "#ffffff" : "#0f172a"; ctx.stroke();
+    ctx.fillStyle = "#ffffff"; ctx.font = "800 13px sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(Math.floor(n.count), n.x, n.y);
+  });
+
+  if (selectedChain.length && dragPos) {
+    selectedChain.forEach(src => {
+      ctx.beginPath(); ctx.moveTo(src.x, src.y); ctx.lineTo(dragPos.x, dragPos.y);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.85)"; ctx.lineWidth = 4;
+      ctx.setLineDash([6, 6]); ctx.stroke(); ctx.setLineDash([]);
+    });
+  }
+
+  if (aiTick % Math.max(25, 65 - lvl * 2) === 0) {
+    ['blue', 'red'].forEach(t => {
+      let aiNodes = nodes.filter(n => n.team === t && n.count > 120);
+      if (aiNodes.length) {
+        let src = aiNodes[Math.floor(Math.random() * aiNodes.length)];
+        let targets = nodes.filter(n => n.team !== t);
+        if (targets.length) {
+          targets.sort((a, b) => a.count - b.count);
+          sendTroops(src, targets.at(0));
+        }
+      }
+    });
+  }
+
+  for (let i = troops.length - 1; i >= 0; i--) {
+    let tr = troops[i], dx = tr.target.x - tr.x, dy = tr.target.y - tr.y, dist = Math.hypot(dx, dy);
+    if (dist < 18) {
+      if (tr.target.team === tr.team) tr.target.count = Math.min(tr.target.max, tr.target.count + tr.val);
+      else {
+        tr.target.count -= tr.val;
+        if (tr.target.count <= 0) { tr.target.count = Math.abs(tr.target.count) + 15; tr.target.team = tr.team; tr.target.color = tr.color; }
+      }
+      troops.splice(i, 1); continue;
+    }
+    tr.x += (dx / dist) * tr.spd; tr.y += (dy / dist) * tr.spd;
+    ctx.beginPath(); ctx.arc(tr.x, tr.y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = tr.color; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = "#fff"; ctx.stroke();
+  }
+
+  let playerAlive = nodes.some(n => n.team === 'player') || troops.some(t => t.team === 'player');
+  let enemyAlive = nodes.some(n => n.team === 'blue' || n.team === 'red') || troops.some(t => t.team === 'blue' || t.team === 'red');
+
+  if (!won && !enemyAlive && playerAlive) {
+    won = true; clearInterval(loop); stars += 2 + Math.floor(lvl / 3); lvl++; saveData();
+    document.getElementById('game-status').textContent = "VICTORY! Theatre Conquered!";
+    document.getElementById('next-btn').style.display = 'inline-block';
+  } else if (!won && !playerAlive) {
+    won = true; clearInterval(loop);
+    document.getElementById('game-status').textContent = "DEFEAT! Forces Overrun.";
+  }
 }
-props.forEach(p => {
-if (p.kind === 'mtn') {
-ctx.fillStyle = "rgba(71,85,105,0.35)";
-ctx.beginPath();
-ctx.moveTo(p.x, p.y - p.sz * 1.4);
-ctx.lineTo(p.x - p.sz * 1.2, p.y + p.sz);
-ctx.lineTo(p.x + p.sz * 1.2, p.y + p.sz);
-ctx.closePath();
-ctx.fill();
-} else if (biome.type === 'desert') {
-ctx.fillStyle = "rgba(21,128,61,0.45)";
-ctx.fillRect(p.x - 1.5, p.y - p.sz, 3, p.sz * 2);
-ctx.fillRect(p.x - 4, p.y - p.sz * 0.4, 8, 2.5);
-} else {
-ctx.fillStyle = biome.type === 'tundra' ? "rgba(100,116,139,0.35)" : "rgba(21,128,61,0.35)";
-ctx.beginPath();
-ctx.arc(p.x, p.y, p.sz * 0.85, 0, Math.PI * 2);
-ctx.fill();
-}
-});
-ctx.restore();
-}
-function tick() {
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-drawScenery();
-aiTick++;
-if (aiTick % 80 === 0) {
-let aiNodes = nodes.filter(n => n.team === 'blue' || n.team === 'red');
-if (aiNodes.length) {
-let src = aiNodes[Math.floor(Math.random() * aiNodes.length)], targets = nodes.filter(n => n.team !== src.team);
-if (targets.length && src.count > 80) sendTroops(src, targets[Math.floor(Math.random() * targets.length)]);
-}
-}
-nodes.forEach(n => {
-if (!n.pts.length) return;
-ctx.beginPath();
-ctx.moveTo(n.pts[0].x, n.pts[0].y);
-for (let i = 1; i < n.pts.length; i++) ctx.lineTo(n.pts[i].x, n.pts[i].y);
-ctx.closePath();
-ctx.fillStyle = n.color + '66';
-ctx.fill();
-ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-ctx.lineWidth = 2;
-ctx.stroke();
-if (n.count < n.max) {
-if (n.team === 'player') n.count += 0.12 + (upg.repro - 1) * 0.05;
-else if (n.team === 'neutral') n.count += 0.03;
-else n.count += 0.11;
-}
-if (selectedChain.includes(n)) {
-ctx.beginPath(); ctx.arc(n.x, n.y, 23, 0, Math.PI * 2); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3.5; ctx.stroke();
-}
-ctx.beginPath(); ctx.arc(n.x, n.y, 16, 0, Math.PI * 2); ctx.fillStyle = n.color; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
-ctx.fillStyle = '#fff'; ctx.font = 'bold 10px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(Math.floor(n.count), n.x, n.y);
-});
- if (selectedChain.length && dragPos) {
-selectedChain.forEach(src => {
-ctx.beginPath(); ctx.moveTo(src.x, src.y); ctx.lineTo(dragPos.x, dragPos.y);
-ctx.strokeStyle = 'rgba(234, 179, 8, 0.9)'; ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.stroke();
-});
-}
-for (let i = troops.length - 1; i >= 0; i--) {
-let a = troops[i];
-if (!a) continue;
-if (a.delay > 0) { a.delay--; continue; }
-let hitIndex = -1;
-for (let j = i - 1; j >= 0; j--) {
-let b = troops[j];
-if (b && b.delay <= 0 && a.team !== b.team && Math.hypot(a.x - b.x, a.y - b.y) < 9) { hitIndex = j; break; }
-}
-if (hitIndex !== -1) { troops.splice(i, 1); troops.splice(hitIndex, 1); i--; continue; }
-let dx = a.dst.x - a.x, dy = a.dst.y - a.y, dist = Math.hypot(dx, dy);
-if (dist < 14) {
-if (a.dst.team === a.team) a.dst.count = Math.min(a.dst.max, a.dst.count + 5);
-else {
-a.dst.count -= 5;
-if (a.dst.count <= 0) { a.dst.team = a.team; a.dst.color = a.color; a.dst.count = Math.abs(a.dst.count) + 5; }
-}
-troops.splice(i, 1);
-} else {
-a.x += (dx / dist) * a.spd; a.y += (dy / dist) * a.spd;
-ctx.beginPath(); ctx.arc(a.x, a.y, 4, 0, Math.PI * 2); ctx.fillStyle = a.color; ctx.fill();
-}
-}
-let hasEnemy = nodes.some(n => n.team === 'blue' || n.team === 'red') || troops.some(t => t.team === 'blue' || t.team === 'red');
-let hasPlayer = nodes.some(n => n.team === 'player') || troops.some(t => t.team === 'player');
-if (!hasEnemy && !won) {
-won = true; stars += 3; lvl++; saveData();
-document.getElementById('game-status').textContent = "Victory! +3 ⭐️ Earned!";
-document.getElementById('next-btn').style.display = 'block';
-} else if (!hasPlayer && !won) {
-document.getElementById('game-status').textContent = "Defeated! Tap Lobby to retry.";
-}
-}
+
+window.nextLevel = function() { startBattle(); };
+
 loadData();
 updateUI();
 
 const AdMobPlugin = window.Capacitor?.Plugins?.AdMob;
 const REWARDED_AD_ID = 'ca-app-pub-4888916688985697/3721133365';
 
-if (AdMobPlugin) {
-  AdMobPlugin.initialize({ initializeForTesting: true });
-}
+if (AdMobPlugin) { AdMobPlugin.initialize({ initializeForTesting: true }); }
 
 window.watchRewardAd = async function(rewardType) {
   let msg = document.getElementById('energy-msg');
-  msg.style.color = "#0284c7";
-  msg.textContent = "Loading video ad...";
-
+  msg.style.color = "#0284c7"; msg.textContent = "Loading video ad...";
   if (AdMobPlugin) {
     try {
       await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID });
       const rewardItem = await AdMobPlugin.showRewardVideoAd();
       if (rewardItem) {
-        if (rewardType === 'energy') {
-          energy = Math.min(MAX_ENERGY, energy + 15);
-          msg.textContent = "Reward claimed: +15 Energy! ⚡";
-        } else if (rewardType === 'stars') {
-          stars += 3;
-          msg.textContent = "Reward claimed: +3 Stars! ⭐️";
-        }
-        saveData();
-        updateUI();
+        if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
+        else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
+        saveData(); updateUI();
       }
     } catch (err) {
-      msg.style.color = "#dc2626";
-      msg.textContent = "Ad not ready yet. Try again in a moment!";
+      msg.style.color = "#dc2626"; msg.textContent = "Ad not ready yet. Try again in a moment!";
     }
   } else {
     setTimeout(() => {
-      if (rewardType === 'energy') {
-        energy = Math.min(MAX_ENERGY, energy + 15);
-        msg.textContent = "Reward claimed: +15 Energy! ⚡";
-      } else if (rewardType === 'stars') {
-        stars += 3;
-        msg.textContent = "Reward claimed: +3 Stars! ⭐️";
-      }
-      saveData();
-      updateUI();
+      if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
+      else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
+      saveData(); updateUI();
     }, 1500);
   }
 };
-
