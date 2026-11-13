@@ -20,3 +20,36 @@ workflows:
           ./gradlew bundleRelease
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
+
+  ios-build:
+    name: Build iOS App for TestFlight
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Codemagic
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.globaltakeover.game
+      node: 20
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install Capacitor and AdMob
+        script: npm install
+      - name: Generate iOS Native Project
+        script: npx cap add ios
+      - name: Sync Web Files to iOS
+        script: npx cap sync ios
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+      - name: Build ipa for distribution
+        script: |
+          xcode-project build-ipa \
+            --workspace "ios/App/App.xcworkspace" \
+            --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
