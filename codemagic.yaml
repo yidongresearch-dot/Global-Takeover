@@ -25,11 +25,8 @@ workflows:
     name: Build iOS App for TestFlight
     max_build_duration: 60
     integrations:
-      app_store_connect: Codemagic
+      app_store_connect: Global takeovers
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.globaltakeover.game
       node: 20
       xcode: latest
       cocoapods: default
@@ -56,13 +53,6 @@ workflows:
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "App"
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
