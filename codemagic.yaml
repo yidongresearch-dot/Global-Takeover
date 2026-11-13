@@ -34,6 +34,15 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Initialize keychain to be used for codesigning
+        script: keychain initialize
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files "com.globaltakeover.game" \
+            --type IOS_APP_STORE \
+            --create
+      - name: Use system default keychain
+        script: keychain add-certificates
       - name: Install Capacitor and AdMob
         script: npm install
       - name: Generate iOS Native Project
@@ -47,6 +56,13 @@ workflows:
           xcode-project build-ipa \
             --workspace "ios/App/App.xcworkspace" \
             --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
