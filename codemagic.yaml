@@ -20,7 +20,6 @@ workflows:
           ./gradlew bundleRelease
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
-
   ios-build:
     name: Build iOS App for TestFlight
     max_build_duration: 60
@@ -33,10 +32,12 @@ workflows:
     scripts:
       - name: Initialize keychain to be used for codesigning
         script: keychain initialize
-      - name: Fetch signing files
+      - name: Generate RSA private key and fetch signing files
         script: |
+          openssl genrsa -out cert_key.pem 2048
           app-store-connect fetch-signing-files "com.globaltakeover.game" \
             --type IOS_APP_STORE \
+            --certificate-key=@file:cert_key.pem \
             --create
       - name: Use system default keychain
         script: keychain add-certificates
@@ -59,3 +60,4 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+
