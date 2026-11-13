@@ -368,4 +368,51 @@ document.getElementById('game-status').textContent = "Defeated! Tap Lobby to ret
 }
 }
 loadData();
-updateUI();  
+updateUI();
+
+const AdMobPlugin = window.Capacitor?.Plugins?.AdMob;
+const REWARDED_AD_ID = 'ca-app-pub-4888916688985697/3721133365';
+
+if (AdMobPlugin) {
+  AdMobPlugin.initialize({ initializeForTesting: true });
+}
+
+window.watchRewardAd = async function(rewardType) {
+  let msg = document.getElementById('energy-msg');
+  msg.style.color = "#0284c7";
+  msg.textContent = "Loading video ad...";
+
+  if (AdMobPlugin) {
+    try {
+      await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID });
+      const rewardItem = await AdMobPlugin.showRewardVideoAd();
+      if (rewardItem) {
+        if (rewardType === 'energy') {
+          energy = Math.min(MAX_ENERGY, energy + 15);
+          msg.textContent = "Reward claimed: +15 Energy! ⚡";
+        } else if (rewardType === 'stars') {
+          stars += 3;
+          msg.textContent = "Reward claimed: +3 Stars! ⭐️";
+        }
+        saveData();
+        updateUI();
+      }
+    } catch (err) {
+      msg.style.color = "#dc2626";
+      msg.textContent = "Ad not ready yet. Try again in a moment!";
+    }
+  } else {
+    setTimeout(() => {
+      if (rewardType === 'energy') {
+        energy = Math.min(MAX_ENERGY, energy + 15);
+        msg.textContent = "Reward claimed: +15 Energy! ⚡";
+      } else if (rewardType === 'stars') {
+        stars += 3;
+        msg.textContent = "Reward claimed: +3 Stars! ⭐️";
+      }
+      saveData();
+      updateUI();
+    }, 1500);
+  }
+};
+
