@@ -30,19 +30,13 @@ workflows:
         - apple_signing
       node: 22
       xcode: latest
-      cocoapods: default
     scripts:
       - name: Initialize keychain to be used for codesigning
         script: keychain initialize
       - name: Fetch signing files
         script: |
-          openssl genrsa -traditional -out cert_key.pem 2048
-          echo "=== COPY BELOW THIS LINE ==="
-          cat cert_key.pem
-          echo "=== COPY ABOVE THIS LINE ==="
           app-store-connect fetch-signing-files "com.globaltakeover.game" \
             --type IOS_APP_STORE \
-            --certificate-key=@file:cert_key.pem \
             --create
       - name: Use system default keychain
         script: keychain add-certificates
@@ -61,7 +55,7 @@ workflows:
       - name: Build ipa for distribution
         script: |
           xcode-project build-ipa \
-            --workspace "ios/App/App.xcworkspace" \
+            --project "ios/App/App.xcodeproj" \
             --scheme "App"
     artifacts:
       - build/ios/ipa/*.ipa
