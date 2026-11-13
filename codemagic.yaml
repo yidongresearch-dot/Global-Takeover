@@ -45,12 +45,13 @@ workflows:
         script: |
           plutil -replace GADApplicationIdentifier -string "ca-app-pub-4888916688985697~2212618572" ios/App/App/Info.plist
           plutil -replace NSUserTrackingUsageDescription -string "This identifier will be used to deliver personalized ads to you." ios/App/App/Info.plist
+          plutil -replace ITSAppUsesNonExemptEncryption -bool false ios/App/App/Info.plist
       - name: Sync Web Files to iOS
         script: npx cap sync ios
       - name: Set up code signing settings on Xcode project
         script: xcode-project use-profiles
       - name: Build ipa for distribution
-        script: xcode-project build-ipa --project "ios/App/App.xcodeproj" --scheme "App"
+        script: xcode-project build-ipa --project "ios/App/App.xcodeproj" --scheme "App" --build-number=$PROJECT_BUILD_NUMBER
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
