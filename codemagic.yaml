@@ -26,15 +26,15 @@ workflows:
     integrations:
       app_store_connect: Global takeovers
     environment:
-      groups:
-        - apple_signing
       node: 22
       xcode: latest
     scripts:
       - name: Initialize keychain to be used for codesigning
         script: keychain initialize
-      - name: Fetch signing files
-        script: app-store-connect fetch-signing-files "com.globaltakeover.game" --type IOS_APP_STORE --create
+      - name: Generate RSA private key and fetch signing files
+        script: |
+          openssl genrsa -traditional -out cert_key.pem 2048
+          app-store-connect fetch-signing-files "com.globaltakeover.game" --type IOS_APP_STORE --certificate-key=@file:cert_key.pem --create
       - name: Use system default keychain
         script: keychain add-certificates
       - name: Install Capacitor and AdMob
