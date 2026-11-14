@@ -12,48 +12,58 @@
       background: #0f172a;
     }
     #app-container {
-      width: 100%; height: 100%; position: relative; overflow: hidden;
-      background: linear-gradient(180deg, #dcfce7 0%, #bae6fd 100%);
+      width: 100%; height: 100%; position: relative; overflow: hidden; background: #38bdf8;
     }
-    .page {
-      display: none; width: 100%; height: 100%; flex-direction: column;
-      padding: env(safe-area-inset-top, 16px) 18px env(safe-area-inset-bottom, 16px) 18px;
-    }
-    .page.active { display: flex; }
-    .header-title {
-      text-align: center; font-size: 26px; font-weight: 900; color: #0f172a;
-      margin: 12px 0 4px 0; letter-spacing: -0.5px;
-    }
-    .sub-title {
-      text-align: center; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 12px;
-    }
-    .stats-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; }
-    .pill {
-      background: #ffffff; padding: 6px 14px; border-radius: 999px;
-      font-size: 13px; font-weight: 800; color: #0f172a;
-      box-shadow: 0 2px 6px rgba(15,23,42,0.08);
-    }
-    .section-label {
-      text-align: center; font-size: 11px; font-weight: 800; color: #475569;
-      letter-spacing: 1px; margin: 14px 0 10px 0; text-transform: uppercase;
-    }
-    .upg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .page { display: none; width: 100%; height: 100%; position: relative; overflow: hidden; }
+    .page.active { display: block; }
+    canvas { width: 100%; height: 100%; display: block; touch-action: none; }
     button { cursor: pointer; touch-action: manipulation; font-family: inherit; }
+
+    /* LOBBY FLOATING HUD */
+    #lobby-top-hud {
+      position: absolute; top: env(safe-area-inset-top, 12px); left: 12px; right: 12px;
+      z-index: 15; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .title-banner {
+      background: rgba(15, 23, 42, 0.88); color: #ffffff; padding: 7px 18px;
+      border-radius: 999px; font-size: 18px; font-weight: 900; letter-spacing: -0.3px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .stats-bar { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      background: rgba(255, 255, 255, 0.95); padding: 6px 13px; border-radius: 999px;
+      font-size: 13px; font-weight: 800; color: #0f172a;
+      box-shadow: 0 3px 8px rgba(15,23,42,0.18);
+    }
+
+    /* LOBBY BOTTOM BAR & UPGRADE DRAWER */
+    #lobby-bottom-hud {
+      position: absolute; bottom: env(safe-area-inset-bottom, 14px); left: 14px; right: 14px;
+      z-index: 15; display: flex; flex-direction: column; gap: 8px;
+    }
+    #upg-drawer {
+      display: none; background: rgba(255, 255, 255, 0.96); border-radius: 20px;
+      padding: 14px; box-shadow: 0 10px 28px rgba(15,23,42,0.3);
+    }
+    #upg-drawer.open { display: block; }
+    .upg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .upg-btn {
-      background: #ffffff; border: 2px solid #e2e8f0; border-radius: 16px;
-      padding: 14px 10px; text-align: center;
-      box-shadow: 0 3px 8px rgba(15,23,42,0.06);
+      background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px;
+      padding: 10px 8px; text-align: center;
     }
     .upg-btn:active { transform: scale(0.97); }
-    .upg-name { font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
-    .upg-cost { font-size: 12px; font-weight: 700; color: #d97706; }
-    .go-btn {
-      width: 100%; background: #16a34a; color: #ffffff; font-size: 18px; font-weight: 900;
-      padding: 16px; border: none; border-radius: 18px;
-      box-shadow: 0 6px 14px rgba(22,163,74,0.3);
+    .upg-name { font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }
+    .upg-cost { font-size: 11px; font-weight: 700; color: #d97706; }
+
+    .dock-row { display: flex; gap: 8px; }
+    .dock-btn {
+      flex: 1; border: none; border-radius: 15px; padding: 13px 6px;
+      font-size: 12px; font-weight: 800; color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.22);
     }
-    .go-btn:active { transform: scale(0.98); }
-    #state-page { padding: 0; position: relative; }
+    .dock-btn:active { transform: scale(0.97); }
+
+    /* BATTLE HUD */
     #top-hud {
       position: absolute; top: env(safe-area-inset-top, 12px); left: 12px; right: 12px;
       display: flex; justify-content: space-between; align-items: center; z-index: 10;
@@ -67,7 +77,8 @@
       background: rgba(255,255,255,0.92); color: #0f172a; padding: 8px 14px;
       border-radius: 12px; font-size: 13px; font-weight: 800;
     }
-    canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+
+    /* MODAL POPUP */
     .modal-overlay {
       display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.72);
       z-index: 50; align-items: center; justify-content: center; padding: 24px;
@@ -77,7 +88,7 @@
       background: #ffffff; border-radius: 24px; padding: 24px 20px; width: 100%;
       max-width: 330px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.35);
     }
-    .modal-title { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 8px 0; }
+    .modal-title { font-size: 23px; font-weight: 900; color: #0f172a; margin: 0 0 8px 0; }
     .modal-body { font-size: 14px; font-weight: 600; color: #475569; margin: 0 0 18px 0; line-height: 1.4; }
     .modal-btn {
       width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 15px;
@@ -88,90 +99,118 @@
 </head>
 <body>
   <div id="app-container">
+    <!-- WORLD MAP LOBBY -->
     <div id="lobby-page" class="page active">
-      <div class="header-title">Global Takeover 🌍</div>
-      <div id="region-preview" class="sub-title">Next Theatre: Heartland Basin</div>
-      <div class="stats-bar">
-        <div class="pill">⭐️ <span id="menu-stars">0</span></div>
-        <div class="pill">⚡ <span id="menu-energy">30</span>/30 <span id="energy-timer" style="font-size:11px; color:#64748b;">(Full)</span></div>
-      </div>
-      <div style="text-align:center; font-size:12px; font-weight:700; color:#475569;">
-        Levels Cleared: <span id="highest-lvl">0</span>
-      </div>
-      <div class="section-label">Upgrade Skills</div>
-      <div class="upg-grid">
-        <button id="btn-speed" class="upg-btn" type="button">
-          <div class="upg-name">👟 Speed: Lvl <span id="lvl-speed">1</span></div>
-          <div class="upg-cost">Need <span id="cost-speed">1</span> ⭐️</div>
-        </button>
-        <button id="btn-repro" class="upg-btn" type="button">
-          <div class="upg-name">🌱 Growth: Lvl <span id="lvl-repro">1</span></div>
-          <div class="upg-cost">Need <span id="cost-repro">1</span> ⭐️</div>
-        </button>
-        <button id="btn-cap" class="upg-btn" type="button">
-          <div class="upg-name">🏰 Max Cap: Lvl <span id="lvl-cap">1</span></div>
-          <div class="upg-cost">Need <span id="cost-cap">1</span> ⭐️</div>
-        </button>
-        <button id="btn-start" class="upg-btn" type="button">
-          <div class="upg-name">⚔️ Start Army: Lvl <span id="lvl-start">1</span></div>
-          <div class="upg-cost">Need <span id="cost-start">1</span> ⭐️</div>
-        </button>
-      </div>
-      <div style="margin-top:auto; margin-bottom:14px; text-align:center;">
-        <button id="invade-btn" class="go-btn" type="button">INVADE LVL <span id="next-lvl-btn">1</span> (-3 ⚡)</button>
-        <div style="display:flex; gap:8px; margin-top:10px;">
-          <button id="ad-energy-btn" type="button" style="flex:1; background:#0284c7; color:#fff; font-size:13px; font-weight:800; padding:14px 6px; border:none; border-radius:14px;">
-            🎬 +15 Energy ⚡
-          </button>
-          <button id="ad-stars-btn" type="button" style="flex:1; background:#d97706; color:#fff; font-size:13px; font-weight:800; padding:14px 6px; border:none; border-radius:14px;">
-            🎬 +3 Stars ⭐️
-          </button>
+      <canvas id="lobbyCanvas"></canvas>
+
+      <div id="lobby-top-hud">
+        <div class="title-banner">Global Takeover 🌍</div>
+        <div class="stats-bar">
+          <div class="pill">⭐️ <span id="menu-stars">0</span></div>
+          <div class="pill">⚡ <span id="menu-energy">30</span>/30 <span id="energy-timer" style="font-size:11px; color:#64748b;">(Full)</span></div>
+          <div class="pill">🏆 <span id="highest-lvl">0</span></div>
         </div>
-        <p id="energy-msg" style="font-size:12px; color:#0284c7; font-weight:700; margin:8px 0 0 0; min-height:16px;"></p>
-        <button id="reset-btn" type="button" style="font-size:11px; color:#ef4444; font-weight:700; background:none; border:none; text-decoration:underline; margin-top:4px;">Reset Saved Data</button>
+        <div id="energy-msg" style="font-size:12px; font-weight:800; color:#0f172a; background:rgba(255,255,255,0.9); padding:3px 10px; border-radius:999px; display:none;"></div>
+      </div>
+
+      <div id="lobby-bottom-hud">
+        <div id="upg-drawer">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span style="font-size:13px; font-weight:900; color:#0f172a;">⚔️ ARMY UPGRADES</span>
+            <button id="reset-btn" type="button" style="font-size:11px; color:#ef4444; font-weight:700; background:none; border:none; text-decoration:underline;">Reset Save</button>
+          </div>
+          <div class="upg-grid">
+            <button id="btn-speed" class="upg-btn" type="button">
+              <div class="upg-name">👟 Speed: Lvl <span id="lvl-speed">1</span></div>
+              <div class="upg-cost">Need <span id="cost-speed">1</span> ⭐️</div>
+            </button>
+            <button id="btn-repro" class="upg-btn" type="button">
+              <div class="upg-name">🌱 Growth: Lvl <span id="lvl-repro">1</span></div>
+              <div class="upg-cost">Need <span id="cost-repro">1</span> ⭐️</div>
+            </button>
+            <button id="btn-cap" class="upg-btn" type="button">
+              <div class="upg-name">🏰 Max Cap: Lvl <span id="lvl-cap">1</span></div>
+              <div class="upg-cost">Need <span id="cost-cap">1</span> ⭐️</div>
+            </button>
+            <button id="btn-start" class="upg-btn" type="button">
+              <div class="upg-name">🛡️ Start Army: Lvl <span id="lvl-start">1</span></div>
+              <div class="upg-cost">Need <span id="cost-start">1</span> ⭐️</div>
+            </button>
+          </div>
+        </div>
+
+        <div class="dock-row">
+          <button id="toggle-upg-btn" class="dock-btn" type="button" style="background:#0f172a;">⚔️ Upgrades</button>
+          <button id="ad-energy-btn" class="dock-btn" type="button" style="background:#0284c7;">🎬 +15 ⚡</button>
+          <button id="ad-stars-btn" class="dock-btn" type="button" style="background:#d97706;">🎬 +3 ⭐️</button>
+          <button id="center-map-btn" class="dock-btn" type="button" style="background:#16a34a;">🎯 Next Lvl</button>
+        </div>
       </div>
     </div>
 
+    <!-- BATTLE PAGE -->
     <div id="state-page" class="page">
       <div id="top-hud">
-        <button id="lobby-btn" class="hud-btn" type="button">← Lobby</button>
+        <button id="lobby-btn" class="hud-btn" type="button">← World Map</button>
         <div id="game-status">Lvl 1</div>
       </div>
       <canvas id="stateCanvas"></canvas>
     </div>
 
+    <!-- POPUP MODAL -->
     <div id="popup-modal" class="modal-overlay">
       <div class="modal-card">
         <h2 id="modal-title" class="modal-title">Notice</h2>
         <p id="modal-body" class="modal-body"></p>
         <button id="modal-action-btn" class="modal-btn" type="button" style="background:#0284c7;">Action</button>
-        <button id="modal-close-btn" class="modal-btn modal-close" type="button">Back to Lobby</button>
+        <button id="modal-close-btn" class="modal-btn modal-close" type="button">Close</button>
       </div>
     </div>
   </div>
   <script>
-    var lvl = 1, stars = 0, upg = { speed: 1, repro: 1, cap: 1, start: 1 };
+    var unlockedLvl = 1, activeLvl = 1, stars = 0;
+    var upg = { speed: 1, repro: 1, cap: 1, start: 1 };
     var energy = 30, lastEnergyTs = Date.now();
+    var savedMaps = {};
     var MAX_ENERGY = 30, ENERGY_COST = 3, RECOVER_MS = 180000, SOLDIER_VAL = 10;
+
+    var THEATRES = [
+      "Heartland Basin", "Sunscorched Dunes", "Frostfang Tundra",
+      "Emerald Delta", "Crimson Canyon", "Shattered Coast",
+      "Whispering Woods", "Obsidian Ridge", "Golden Steppe", "Azure Archipelago"
+    ];
+    var BIOMES = [
+      { bg: "#86efac", shore: "#fef08a", accent: "#22c55e", type: "grass" },
+      { bg: "#fde047", shore: "#fef9c3", accent: "#eab308", type: "desert" },
+      { bg: "#e2e8f0", shore: "#f8fafc", accent: "#94a3b8", type: "tundra" }
+    ];
+
+    function getLevelName(n) {
+      var base = THEATRES[(n - 1) % THEATRES.length];
+      var sector = Math.floor((n - 1) / THEATRES.length) + 1;
+      return sector > 1 ? base + " " + sector : base;
+    }
 
     function loadData() {
       try {
-        if (localStorage.getItem('gt_lvl')) lvl = +localStorage.getItem('gt_lvl');
+        if (localStorage.getItem('gt_lvl')) unlockedLvl = +localStorage.getItem('gt_lvl');
         if (localStorage.getItem('gt_stars')) stars = +localStorage.getItem('gt_stars');
         if (localStorage.getItem('gt_upg')) upg = JSON.parse(localStorage.getItem('gt_upg'));
         if (localStorage.getItem('gt_nrg') !== null) energy = +localStorage.getItem('gt_nrg');
         if (localStorage.getItem('gt_ts')) lastEnergyTs = +localStorage.getItem('gt_ts');
+        if (localStorage.getItem('gt_maps')) savedMaps = JSON.parse(localStorage.getItem('gt_maps'));
       } catch (e) {}
       syncEnergy();
     }
 
     function saveData() {
       try {
-        localStorage.setItem('gt_lvl', lvl);
+        localStorage.setItem('gt_lvl', unlockedLvl);
         localStorage.setItem('gt_stars', stars);
         localStorage.setItem('gt_upg', JSON.stringify(upg));
         localStorage.setItem('gt_nrg', energy);
         localStorage.setItem('gt_ts', lastEnergyTs);
+        localStorage.setItem('gt_maps', JSON.stringify(savedMaps));
       } catch (e) {}
     }
 
@@ -184,6 +223,15 @@
         lastEnergyTs = energy >= MAX_ENERGY ? now : lastEnergyTs + gained * RECOVER_MS;
         saveData();
       }
+    }
+
+    function showToast(text, color) {
+      var el = document.getElementById('energy-msg');
+      el.textContent = text;
+      el.style.color = color || '#0284c7';
+      el.style.display = 'inline-block';
+      clearTimeout(el._t);
+      el._t = setTimeout(function() { el.style.display = 'none'; }, 3500);
     }
 
     function showModal(title, body, actionText, actionColor, onAction, showClose, closeText) {
@@ -202,6 +250,7 @@
       if (showClose) {
         clsBtn.style.display = 'block';
         clsBtn.textContent = closeText || 'Close';
+        clsBtn.onclick = hideModal;
       } else {
         clsBtn.style.display = 'none';
       }
@@ -214,9 +263,10 @@
 
     function resetSave() {
       localStorage.clear();
-      lvl = 1; stars = 0; energy = 30; lastEnergyTs = Date.now();
+      unlockedLvl = 1; activeLvl = 1; stars = 0; energy = 30; lastEnergyTs = Date.now();
       upg = { speed: 1, repro: 1, cap: 1, start: 1 };
-      saveData(); updateUI();
+      savedMaps = {};
+      saveData(); updateUI(); centerMapOnLevel(1);
     }
 
     function buyUpgrade(k) {
@@ -225,7 +275,7 @@
       } else {
         showModal(
           "Not Enough Stars ⭐️",
-          "You need " + upg[k] + " ⭐️ to upgrade this skill, but you have " + stars + " ⭐️. Watch a quick video ad to claim +3 Stars!",
+          "You need " + upg[k] + " ⭐️ for this upgrade, but have " + stars + " ⭐️. Watch a short ad for +3 Stars!",
           "🎬 Watch Ad (+3 Stars ⭐️)",
           "#d97706",
           function() { watchRewardAd('stars'); },
@@ -235,27 +285,18 @@
       }
     }
 
-    var THEATRES = ["Heartland Basin", "Sunscorched Dunes", "Frostfang Tundra", "Emerald Delta", "Crimson Canyon", "Shattered Coast"];
-    var BIOMES = [
-      { bg: "#86efac", shore: "#fef08a", accent: "#22c55e", type: "grass" },
-      { bg: "#fde047", shore: "#fef9c3", accent: "#eab308", type: "desert" },
-      { bg: "#e2e8f0", shore: "#f8fafc", accent: "#94a3b8", type: "tundra" }
-    ];
-
     function updateUI() {
       syncEnergy();
       document.getElementById('menu-stars').textContent = stars;
       document.getElementById('menu-energy').textContent = energy;
-      document.getElementById('highest-lvl').textContent = lvl - 1;
-      document.getElementById('next-lvl-btn').textContent = lvl;
-      document.getElementById('region-preview').textContent = "Next Theatre: " + THEATRES[(lvl - 1) % THEATRES.length];
+      document.getElementById('highest-lvl').textContent = unlockedLvl - 1;
       var timerEl = document.getElementById('energy-timer');
       if (energy >= MAX_ENERGY) {
         timerEl.textContent = "(Full)";
       } else {
         var rem = Math.max(0, RECOVER_MS - (Date.now() - lastEnergyTs));
         var m = Math.floor(rem / 60000), s = Math.floor((rem % 60000) / 1000);
-        timerEl.textContent = "(+1 in " + m + ":" + (s < 10 ? "0" : "") + s + ")";
+        timerEl.textContent = "(+" + m + ":" + (s < 10 ? "0" : "") + s + ")";
       }
       ['speed', 'repro', 'cap', 'start'].forEach(function(k) {
         document.getElementById('lvl-' + k).textContent = upg[k];
@@ -263,13 +304,244 @@
       });
     }
     setInterval(updateUI, 1000);
+    var lobbyCanvas = document.getElementById('lobbyCanvas');
+    var lCtx = lobbyCanvas.getContext('2d');
+    var mapScrollY = 0, mapVelY = 0, isDraggingMap = false, dragStartY = 0, dragLastY = 0, dragMoved = false;
+    var LEVEL_SPACING = 115;
 
-    function startBattle() {
+    function getMapNodePos(n, W, H) {
+      var baseBottom = H - 150;
+      var y = baseBottom - (n - 1) * LEVEL_SPACING + mapScrollY;
+      var x = W * 0.5 + Math.sin(n * 1.15) * (W * 0.27);
+      return { x: x, y: y };
+    }
+
+    function centerMapOnLevel(n) {
+      var H = lobbyCanvas.height || window.innerHeight;
+      mapScrollY = Math.max(0, (n - 2) * LEVEL_SPACING);
+      mapVelY = 0;
+    }
+
+    function clampMapScroll() {
+      var maxVisible = unlockedLvl + 5;
+      var H = lobbyCanvas.height || window.innerHeight;
+      var maxScroll = Math.max(0, (maxVisible - 2) * LEVEL_SPACING);
+      if (mapScrollY < -40) { mapScrollY = -40; mapVelY = 0; }
+      if (mapScrollY > maxScroll) { mapScrollY = maxScroll; mapVelY = 0; }
+    }
+
+    function drawWorldMap() {
+      if (!document.getElementById('lobby-page').classList.contains('active')) return;
+      if (lobbyCanvas.width !== lobbyCanvas.parentElement.clientWidth || lobbyCanvas.height !== lobbyCanvas.parentElement.clientHeight) {
+        lobbyCanvas.width = lobbyCanvas.parentElement.clientWidth;
+        lobbyCanvas.height = lobbyCanvas.parentElement.clientHeight;
+      }
+      var W = lobbyCanvas.width, H = lobbyCanvas.height;
+
+      if (!isDraggingMap && Math.abs(mapVelY) > 0.1) {
+        mapScrollY += mapVelY;
+        mapVelY *= 0.92;
+        clampMapScroll();
+      }
+
+      // Ocean background
+      lCtx.fillStyle = "#38bdf8";
+      lCtx.fillRect(0, 0, W, H);
+
+      var maxVisible = unlockedLvl + 5;
+      var minLvl = Math.max(1, Math.floor((mapScrollY - 200) / LEVEL_SPACING));
+      var topLvl = Math.min(maxVisible + 2, Math.ceil((mapScrollY + H + 200) / LEVEL_SPACING));
+
+      // Draw colorful procedural terrain islands along the wandering route
+      for (var n = minLvl; n <= topLvl; n++) {
+        var pos = getMapNodePos(n, W, H);
+        var b = BIOMES[(n - 1) % BIOMES.length];
+        var seedOff = Math.sin(n * 2.7) * 28;
+        var radX = W * 0.42 + Math.cos(n * 1.9) * 22;
+        var radY = 82;
+
+        // Sandy shoreline
+        lCtx.fillStyle = b.shore;
+        lCtx.beginPath();
+        lCtx.ellipse(pos.x + seedOff * 0.4, pos.y, radX + 12, radY + 12, Math.sin(n) * 0.15, 0, Math.PI * 2);
+        lCtx.fill();
+
+        // Lush colorful landmass
+        lCtx.fillStyle = b.bg;
+        lCtx.beginPath();
+        lCtx.ellipse(pos.x + seedOff * 0.4, pos.y, radX, radY, Math.sin(n) * 0.15, 0, Math.PI * 2);
+        lCtx.fill();
+
+        // Decorative hills & trees
+        lCtx.fillStyle = b.accent;
+        lCtx.beginPath();
+        lCtx.arc(pos.x - radX * 0.55, pos.y - 18, 9, 0, Math.PI * 2);
+        lCtx.arc(pos.x + radX * 0.52, pos.y + 20, 11, 0, Math.PI * 2);
+        lCtx.fill();
+      }
+
+      // Draw wandering path segments
+      for (var n = 1; n < maxVisible; n++) {
+        var p1 = getMapNodePos(n, W, H);
+        var p2 = getMapNodePos(n + 1, W, H);
+        if (p1.y < -120 && p2.y < -120) continue;
+        if (p1.y > H + 120 && p2.y > H + 120) continue;
+
+        var isClearedPath = (n < unlockedLvl);
+        lCtx.save();
+        lCtx.beginPath();
+        lCtx.moveTo(p1.x, p1.y);
+        var midX = (p1.x + p2.x) / 2 + Math.cos(n * 2.1) * 26;
+        var midY = (p1.y + p2.y) / 2;
+        lCtx.quadraticCurveTo(midX, midY, p2.x, p2.y);
+        lCtx.lineWidth = 7;
+        lCtx.lineCap = "round";
+        if (isClearedPath) {
+          lCtx.strokeStyle = "#ffffff";
+          lCtx.setLineDash([]);
+        } else {
+          lCtx.strokeStyle = "#94a3b8";
+          lCtx.setLineDash([10, 10]);
+        }
+        lCtx.stroke();
+        lCtx.restore();
+      }
+
+      // Open-ended path extending off the top horizon beyond maxVisible
+      var lastP = getMapNodePos(maxVisible, W, H);
+      var beyondP = getMapNodePos(maxVisible + 2, W, H);
+      lCtx.save();
+      lCtx.beginPath();
+      lCtx.moveTo(lastP.x, lastP.y);
+      lCtx.quadraticCurveTo(W * 0.5, (lastP.y + beyondP.y) / 2, beyondP.x, beyondP.y);
+      lCtx.lineWidth = 7;
+      lCtx.strokeStyle = "#94a3b8";
+      lCtx.setLineDash([10, 12]);
+      lCtx.stroke();
+      lCtx.restore();
+
+      // Draw level dots & map name labels
+      for (var n = 1; n <= maxVisible; n++) {
+        var p = getMapNodePos(n, W, H);
+        if (p.y < -80 || p.y > H + 80) continue;
+
+        var cleared = (n < unlockedLvl);
+        var current = (n === unlockedLvl);
+        var locked = (n > unlockedLvl);
+        var radius = current ? 24 : 20;
+
+        // Outer ring
+        lCtx.beginPath();
+        lCtx.arc(p.x, p.y, radius + 4, 0, Math.PI * 2);
+        lCtx.fillStyle = current ? "rgba(255,255,255,0.85)" : "rgba(15,23,42,0.2)";
+        lCtx.fill();
+
+        // Main dot color
+        lCtx.beginPath();
+        lCtx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        if (cleared) lCtx.fillStyle = "#16a34a";
+        else if (current) lCtx.fillStyle = "#eab308";
+        else lCtx.fillStyle = "#94a3b8";
+        lCtx.fill();
+        lCtx.lineWidth = 3;
+        lCtx.strokeStyle = locked ? "#64748b" : "#ffffff";
+        lCtx.stroke();
+
+        // Level number or lock inside dot
+        lCtx.fillStyle = "#ffffff";
+        lCtx.font = "900 14px sans-serif";
+        lCtx.textAlign = "center";
+        lCtx.textBaseline = "middle";
+        lCtx.fillText(locked ? "🔒" : n, p.x, p.y);
+
+        // Level map name pill below dot
+        var label = "Lvl " + n + " · " + getLevelName(n);
+        lCtx.font = "800 11px sans-serif";
+        var tw = lCtx.measureText(label).width + 16;
+        lCtx.fillStyle = locked ? "rgba(71,85,105,0.88)" : "rgba(15,23,42,0.88)";
+        lCtx.beginPath();
+        lCtx.roundRect(p.x - tw / 2, p.y + radius + 6, tw, 20, 10);
+        lCtx.fill();
+
+        lCtx.fillStyle = locked ? "#cbd5e1" : "#ffffff";
+        lCtx.fillText(label, p.x, p.y + radius + 16);
+      }
+    }
+    setInterval(drawWorldMap, 30);
+
+    lobbyCanvas.ontouchstart = function(e) {
+      var t = e.touches && e.touches.item(0);
+      if (!t) return;
+      isDraggingMap = true;
+      dragMoved = false;
+      dragStartY = t.clientY;
+      dragLastY = t.clientY;
+      mapVelY = 0;
+    };
+
+    lobbyCanvas.ontouchmove = function(e) {
+      e.preventDefault();
+      var t = e.touches && e.touches.item(0);
+      if (!isDraggingMap || !t) return;
+      var dy = t.clientY - dragLastY;
+      if (Math.abs(t.clientY - dragStartY) > 8) dragMoved = true;
+      mapScrollY += dy;
+      mapVelY = dy;
+      dragLastY = t.clientY;
+      clampMapScroll();
+    };
+
+    lobbyCanvas.ontouchend = function(e) {
+      isDraggingMap = false;
+      if (!dragMoved) {
+        var r = lobbyCanvas.getBoundingClientRect();
+        var t = e.changedTouches && e.changedTouches.item(0);
+        if (!t) return;
+        var tapX = t.clientX - r.left, tapY = t.clientY - r.top;
+        var maxVisible = unlockedLvl + 5;
+        for (var n = 1; n <= maxVisible; n++) {
+          var p = getMapNodePos(n, lobbyCanvas.width, lobbyCanvas.height);
+          if (Math.hypot(tapX - p.x, tapY - p.y) <= 34) {
+            onLevelNodeTap(n);
+            break;
+          }
+        }
+      }
+    };
+
+    function onLevelNodeTap(n) {
+      if (n > unlockedLvl) {
+        showModal(
+          "Territory Locked 🔒",
+          "Clear Level " + unlockedLvl + " (" + getLevelName(unlockedLvl) + ") first to unlock further territories!",
+          "Jump to Level " + unlockedLvl,
+          "#16a34a",
+          function() { centerMapOnLevel(unlockedLvl); },
+          true,
+          "Close"
+        );
+        return;
+      }
+      var isReplay = (n < unlockedLvl);
+      showModal(
+        "Level " + n + ": " + getLevelName(n),
+        isReplay
+          ? "Replay this conquered territory map! Cost: " + ENERGY_COST + " ⚡"
+          : "Invade and conquer this territory to unlock the next frontier! Cost: " + ENERGY_COST + " ⚡",
+        "⚔️ INVADE (-" + ENERGY_COST + " ⚡)",
+        "#16a34a",
+        function() { startBattle(n); },
+        true,
+        "Cancel"
+      );
+    }
+    function startBattle(targetLevel) {
+      activeLvl = targetLevel || unlockedLvl;
       syncEnergy();
       if (energy < ENERGY_COST) {
         showModal(
           "Out of Energy ⚡",
-          "You need " + ENERGY_COST + " ⚡ to launch an invasion. Watch a quick video ad to refill +15 Energy immediately!",
+          "You need " + ENERGY_COST + " ⚡ to launch an invasion. Watch a short video ad to refill +15 Energy!",
           "🎬 Watch Ad (+15 Energy ⚡)",
           "#0284c7",
           function() { watchRewardAd('energy'); },
@@ -278,7 +550,6 @@
         );
         return;
       }
-      document.getElementById('energy-msg').textContent = "";
       if (energy === MAX_ENERGY) lastEnergyTs = Date.now();
       energy -= ENERGY_COST;
       saveData();
@@ -293,6 +564,7 @@
       updateUI();
       if (id === 'state-page') setTimeout(initGame, 50);
     }
+
     function pointInPoly(pt, vs) {
       var x = pt.x, y = pt.y, inside = false;
       for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
@@ -343,44 +615,75 @@
       canvas.height = canvas.parentElement.clientHeight;
       var W = canvas.width, H = canvas.height;
       troops = []; marchQueues = []; sparks = []; selectedChain = []; dragPos = null; aiTick = 0; won = false;
-      var name = THEATRES[(lvl - 1) % THEATRES.length];
-      biome = BIOMES[(lvl - 1) % BIOMES.length];
-      document.getElementById('game-status').textContent = "Lvl " + lvl + ": " + name;
-      island = makeContinent(W, H);
 
-      var rAng = Math.random() * Math.PI * 2, rPhase = Math.random() * 6;
-      river = [];
-      for (var i = 0; i <= 20; i++) {
-        var t = (i / 20) - 0.5, perp = Math.sin(t * 9 + rPhase) * 0.06;
-        river.push({ x: (0.5 + t * Math.cos(rAng) - perp * Math.sin(rAng)) * W, y: (0.5 + t * Math.sin(rAng) + perp * Math.cos(rAng)) * H });
+      var name = getLevelName(activeLvl);
+      biome = BIOMES[(activeLvl - 1) % BIOMES.length];
+      document.getElementById('game-status').textContent = "Lvl " + activeLvl + ": " + name;
+
+      // Load saved layout from phone memory if played before, else generate & save it!
+      var mem = savedMaps[activeLvl];
+      if (mem && mem.island && mem.nodes) {
+        island = mem.island.map(function(p) { return { x: p.x * W, y: p.y * H }; });
+        river = mem.river.map(function(p) { return { x: p.x * W, y: p.y * H }; });
+        props = mem.props.map(function(pr) { return { x: pr.x * W, y: pr.y * H, kind: pr.kind, sz: pr.sz }; });
+        nodes = mem.nodes.map(function(nd, i) {
+          var isPlayer = (nd.team === 'player');
+          return {
+            id: i, x: nd.x * W, y: nd.y * H,
+            pts: nd.pts.map(function(p) { return { x: p.x * W, y: p.y * H }; }),
+            team: nd.team, color: nd.color,
+            count: isPlayer ? 400 + (upg.start - 1) * 120 : nd.baseCount,
+            max: isPlayer ? 1000 + (upg.cap - 1) * 250 : nd.max
+          };
+        });
+      } else {
+        island = makeContinent(W, H);
+        var rAng = Math.random() * Math.PI * 2, rPhase = Math.random() * 6;
+        river = [];
+        for (var i = 0; i <= 20; i++) {
+          var t = (i / 20) - 0.5, perp = Math.sin(t * 9 + rPhase) * 0.06;
+          river.push({ x: (0.5 + t * Math.cos(rAng) - perp * Math.sin(rAng)) * W, y: (0.5 + t * Math.sin(rAng) + perp * Math.cos(rAng)) * H });
+        }
+        props = [];
+        for (var i = 0; i < 36; i++) {
+          var px = (0.15 + Math.random() * 0.7) * W, py = (0.15 + Math.random() * 0.7) * H;
+          if (pointInPoly({ x: px, y: py }, island)) props.push({ x: px, y: py, kind: i % 4 === 0 ? 'mtn' : 'flora', sz: 4 + Math.random() * 4 });
+        }
+        var count = Math.min(8, 5 + Math.floor(activeLvl / 2)), rot = Math.random() * Math.PI * 2, seeds = [];
+        for (var i = 0; i < count; i++) {
+          var ang = rot + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+          var rad = i === 0 ? 0.05 : 0.23 + Math.random() * 0.06;
+          seeds.push({ x: (0.5 + Math.cos(ang) * rad) * W, y: (0.5 + Math.sin(ang) * rad) * H });
+        }
+        var polys = carveMap(seeds, island);
+        var indices = seeds.map(function(_, i) { return i; }).sort(function() { return Math.random() - 0.5; });
+        var enemyCount = Math.min(3, 1 + Math.floor(activeLvl / 2));
+
+        nodes = seeds.map(function(s, i) {
+          var pts = polys[i];
+          var cx = pts.length ? pts.reduce(function(sum, p) { return sum + p.x; }, 0) / pts.length : s.x;
+          var cy = pts.length ? pts.reduce(function(sum, p) { return sum + p.y; }, 0) / pts.length : s.y;
+          var rank = indices.indexOf(i), team = 'neutral', color = '#64748b', cnt = 120 + Math.floor(Math.random() * 90), max = 600;
+          if (rank === 0) { team = 'player'; color = '#eab308'; cnt = 400 + (upg.start - 1) * 120; max = 1000 + (upg.cap - 1) * 250; }
+          else if (rank <= enemyCount) { team = rank % 2 === 1 ? 'blue' : 'red'; color = team === 'blue' ? '#3b82f6' : '#ef4444'; cnt = 300 + activeLvl * 25; max = 1000 + activeLvl * 50; }
+          return { id: i, x: cx, y: cy, pts: pts, team: team, color: color, count: cnt, max: max, baseCount: cnt };
+        });
+
+        // Save normalized coordinates to phone storage so replaying this level uses the exact same map
+        savedMaps[activeLvl] = {
+          island: island.map(function(p) { return { x: p.x / W, y: p.y / H }; }),
+          river: river.map(function(p) { return { x: p.x / W, y: p.y / H }; }),
+          props: props.map(function(pr) { return { x: pr.x / W, y: pr.y / H, kind: pr.kind, sz: pr.sz }; }),
+          nodes: nodes.map(function(nd) {
+            return {
+              x: nd.x / W, y: nd.y / H,
+              pts: nd.pts.map(function(p) { return { x: p.x / W, y: p.y / H }; }),
+              team: nd.team, color: nd.color, baseCount: nd.baseCount || nd.count, max: nd.max
+            };
+          })
+        };
+        saveData();
       }
-
-      props = [];
-      for (var i = 0; i < 36; i++) {
-        var px = (0.15 + Math.random() * 0.7) * W, py = (0.15 + Math.random() * 0.7) * H;
-        if (pointInPoly({ x: px, y: py }, island)) props.push({ x: px, y: py, kind: i % 4 === 0 ? 'mtn' : 'flora', sz: 4 + Math.random() * 4 });
-      }
-
-      var count = Math.min(8, 5 + Math.floor(lvl / 2)), rot = Math.random() * Math.PI * 2, seeds = [];
-      for (var i = 0; i < count; i++) {
-        var ang = rot + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
-        var rad = i === 0 ? 0.05 : 0.23 + Math.random() * 0.06;
-        seeds.push({ x: (0.5 + Math.cos(ang) * rad) * W, y: (0.5 + Math.sin(ang) * rad) * H });
-      }
-
-      var polys = carveMap(seeds, island);
-      var indices = seeds.map(function(_, i) { return i; }).sort(function() { return Math.random() - 0.5; });
-      var enemyCount = Math.min(3, 1 + Math.floor(lvl / 2));
-
-      nodes = seeds.map(function(s, i) {
-        var pts = polys[i];
-        var cx = pts.length ? pts.reduce(function(sum, p) { return sum + p.x; }, 0) / pts.length : s.x;
-        var cy = pts.length ? pts.reduce(function(sum, p) { return sum + p.y; }, 0) / pts.length : s.y;
-        var rank = indices.indexOf(i), team = 'neutral', color = '#64748b', cnt = 120 + Math.floor(Math.random() * 90), max = 600;
-        if (rank === 0) { team = 'player'; color = '#eab308'; cnt = 400 + (upg.start - 1) * 120; max = 1000 + (upg.cap - 1) * 250; }
-        else if (rank <= enemyCount) { team = rank % 2 === 1 ? 'blue' : 'red'; color = team === 'blue' ? '#3b82f6' : '#ef4444'; cnt = 300 + lvl * 25; max = 1000 + lvl * 50; }
-        return { id: i, x: cx, y: cy, pts: pts, team: team, color: color, count: cnt, max: max };
-      });
 
       function getHitNode(pt) {
         return nodes.find(function(n) { return (n.pts.length && pointInPoly(pt, n.pts)) || Math.hypot(n.x - pt.x, n.y - pt.y) < 35; });
@@ -423,14 +726,13 @@
       var rawAmount = Math.floor(src.count * 0.65);
       var soldiers = Math.floor(rawAmount / SOLDIER_VAL);
       if (soldiers <= 0) return;
-      var spd = (src.team === 'player' ? 1.8 + (upg.speed - 1) * 0.45 : 1.7 + lvl * 0.05);
+      var spd = (src.team === 'player' ? 1.8 + (upg.speed - 1) * 0.45 : 1.7 + activeLvl * 0.05);
       var gapTicks = src.team === 'player' ? Math.max(1, 5 - Math.floor(upg.speed / 2)) : 3;
       marchQueues.push({
         src: src, target: target, team: src.team, color: src.color,
         remaining: soldiers, spd: spd, gapTicks: gapTicks, wait: 0, lane: 0
       });
     }
-
     function drawSoldier(tr) {
       var angle = Math.atan2(tr.target.y - tr.y, tr.target.x - tr.x);
       var legSwing = Math.sin(tr.step * 0.45) * 3;
@@ -463,6 +765,7 @@
       ctx.fill(); ctx.stroke();
       ctx.restore();
     }
+
     function updateGame() {
       var W = canvas.width, H = canvas.height;
       ctx.fillStyle = "#38bdf8";
@@ -522,7 +825,7 @@
       aiTick++;
       nodes.forEach(function(n) {
         if (n.team !== 'neutral' && n.count < n.max) {
-          var rate = n.team === 'player' ? 0.32 + (upg.repro - 1) * 0.12 : 0.30 + lvl * 0.02;
+          var rate = n.team === 'player' ? 0.32 + (upg.repro - 1) * 0.12 : 0.30 + activeLvl * 0.02;
           n.count = Math.min(n.max, n.count + rate);
         }
         if (n.pts.length) {
@@ -552,7 +855,7 @@
         });
       }
 
-      if (aiTick % Math.max(30, 75 - lvl * 2) === 0) {
+      if (aiTick % Math.max(30, 75 - activeLvl * 2) === 0) {
         ['blue', 'red'].forEach(function(t) {
           var aiNodes = nodes.filter(function(n) { return n.team === t && n.count > 120; });
           if (aiNodes.length) {
@@ -623,14 +926,34 @@
 
       if (!won && !enemyAlive && playerAlive) {
         won = true; clearInterval(loop); marchQueues = [];
-        var earned = 2 + Math.floor(lvl / 3);
-        stars += earned; lvl++; saveData();
-        showModal("VICTORY! 🎉", "Theatre conquered! You earned +" + earned + " ⭐️ for your empire.", null, null, null, true, "Return to Lobby");
-        document.getElementById('modal-close-btn').onclick = function() { hideModal(); openGame('lobby-page'); };
+        var earned = 2 + Math.floor(activeLvl / 3);
+        stars += earned;
+        var unlockedNew = false;
+        if (activeLvl === unlockedLvl) {
+          unlockedLvl++;
+          unlockedNew = true;
+        }
+        saveData();
+        showModal(
+          "VICTORY! 🎉",
+          unlockedNew
+            ? "Territory conquered! Earned +" + earned + " ⭐️ and extended the world map!"
+            : "Replay victory! Earned +" + earned + " ⭐️ for your empire.",
+          null, null, null, true, "Return to World Map"
+        );
+        document.getElementById('modal-close-btn').onclick = function() {
+          hideModal(); openGame('lobby-page'); centerMapOnLevel(unlockedLvl);
+        };
       } else if (!won && !playerAlive) {
         won = true; clearInterval(loop); marchQueues = [];
-        showModal("DEFEAT 💀", "Your forces were overrun! Upgrade your skills in the lobby and try again.", null, null, null, true, "Return to Lobby");
-        document.getElementById('modal-close-btn').onclick = function() { hideModal(); openGame('lobby-page'); };
+        showModal(
+          "DEFEAT 💀",
+          "Your forces were overrun! Upgrade your skills on the world map and try again.",
+          null, null, null, true, "Return to World Map"
+        );
+        document.getElementById('modal-close-btn').onclick = function() {
+          hideModal(); openGame('lobby-page'); centerMapOnLevel(activeLvl);
+        };
       }
     }
 
@@ -649,32 +972,29 @@
     initAdMob();
 
     async function watchRewardAd(rewardType) {
-      var msg = document.getElementById('energy-msg');
-      msg.style.color = "#0284c7"; msg.textContent = "Loading video ad...";
+      showToast("Loading video ad...", "#0284c7");
       if (AdMobPlugin && AdMobPlugin.prepareRewardVideoAd) {
         try {
           if (!admobReady) await initAdMob();
           await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID, isTesting: true });
           var rewardItem = await AdMobPlugin.showRewardVideoAd();
           if (rewardItem) {
-            if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
-            else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
+            if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); showToast("Reward claimed: +15 Energy! ⚡", "#16a34a"); }
+            else if (rewardType === 'stars') { stars += 3; showToast("Reward claimed: +3 Stars! ⭐️", "#d97706"); }
             saveData(); updateUI();
           }
         } catch (err) {
-          msg.style.color = "#dc2626";
-          msg.textContent = "Test ad unavailable (" + (err && err.message ? err.message : "check network") + ")";
+          showToast("Test ad unavailable right now", "#dc2626");
         }
       } else {
         setTimeout(function() {
-          if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
-          else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
+          if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); showToast("Reward claimed: +15 Energy! ⚡", "#16a34a"); }
+          else if (rewardType === 'stars') { stars += 3; showToast("Reward claimed: +3 Stars! ⭐️", "#d97706"); }
           saveData(); updateUI();
         }, 1200);
       }
     }
 
-    document.getElementById('invade-btn').addEventListener('click', startBattle);
     document.getElementById('lobby-btn').addEventListener('click', function() { openGame('lobby-page'); });
     document.getElementById('reset-btn').addEventListener('click', resetSave);
     document.getElementById('modal-close-btn').addEventListener('click', hideModal);
@@ -684,9 +1004,16 @@
     document.getElementById('btn-repro').addEventListener('click', function() { buyUpgrade('repro'); });
     document.getElementById('btn-cap').addEventListener('click', function() { buyUpgrade('cap'); });
     document.getElementById('btn-start').addEventListener('click', function() { buyUpgrade('start'); });
-loadData();
-updateUI();
-</script>
+    document.getElementById('toggle-upg-btn').addEventListener('click', function() {
+      document.getElementById('upg-drawer').classList.toggle('open');
+    });
+    document.getElementById('center-map-btn').addEventListener('click', function() {
+      centerMapOnLevel(unlockedLvl);
+    });
+
+    loadData();
+    updateUI();
+    setTimeout(function() { centerMapOnLevel(unlockedLvl); }, 60);
+  </script>
 </body>
 </html>
-
