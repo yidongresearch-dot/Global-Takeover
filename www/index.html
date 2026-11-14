@@ -67,13 +67,23 @@
       background: rgba(255,255,255,0.92); color: #0f172a; padding: 8px 14px;
       border-radius: 12px; font-size: 13px; font-weight: 800;
     }
-    #next-btn {
-      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-      background: #eab308; color: #0f172a; font-size: 18px; font-weight: 900;
-      padding: 16px 32px; border: none; border-radius: 18px; z-index: 20;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.25); display: none;
-    }
     canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+    .modal-overlay {
+      display: none; position: absolute; inset: 0; background: rgba(15,23,42,0.72);
+      z-index: 50; align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-card {
+      background: #ffffff; border-radius: 24px; padding: 24px 20px; width: 100%;
+      max-width: 330px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    .modal-title { font-size: 24px; font-weight: 900; color: #0f172a; margin: 0 0 8px 0; }
+    .modal-body { font-size: 14px; font-weight: 600; color: #475569; margin: 0 0 18px 0; line-height: 1.4; }
+    .modal-btn {
+      width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 15px;
+      font-weight: 800; color: #fff; margin-bottom: 8px;
+    }
+    .modal-close { background: #e2e8f0; color: #334155; margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -117,7 +127,7 @@
             🎬 +3 Stars ⭐️
           </button>
         </div>
-        <p id="energy-msg" style="font-size:12px; color:#dc2626; font-weight:700; margin:8px 0 0 0; min-height:16px;"></p>
+        <p id="energy-msg" style="font-size:12px; color:#0284c7; font-weight:700; margin:8px 0 0 0; min-height:16px;"></p>
         <button id="reset-btn" type="button" style="font-size:11px; color:#ef4444; font-weight:700; background:none; border:none; text-decoration:underline; margin-top:4px;">Reset Saved Data</button>
       </div>
     </div>
@@ -128,18 +138,21 @@
         <div id="game-status">Lvl 1</div>
       </div>
       <canvas id="stateCanvas"></canvas>
-      <button id="next-btn" type="button">NEXT THEATRE →</button>
+    </div>
+
+    <div id="popup-modal" class="modal-overlay">
+      <div class="modal-card">
+        <h2 id="modal-title" class="modal-title">Notice</h2>
+        <p id="modal-body" class="modal-body"></p>
+        <button id="modal-action-btn" class="modal-btn" type="button" style="background:#0284c7;">Action</button>
+        <button id="modal-close-btn" class="modal-btn modal-close" type="button">Back to Lobby</button>
+      </div>
     </div>
   </div>
   <script>
-    window.onerror = function(msg, url, line) {
-      var el = document.getElementById('energy-msg');
-      if (el) el.textContent = "Err L" + line + ": " + msg;
-    };
-
     var lvl = 1, stars = 0, upg = { speed: 1, repro: 1, cap: 1, start: 1 };
     var energy = 30, lastEnergyTs = Date.now();
-    var MAX_ENERGY = 30, ENERGY_COST = 3, RECOVER_MS = 180000;
+    var MAX_ENERGY = 30, ENERGY_COST = 3, RECOVER_MS = 180000, SOLDIER_VAL = 10;
 
     function loadData() {
       try {
@@ -173,6 +186,32 @@
       }
     }
 
+    function showModal(title, body, actionText, actionColor, onAction, showClose, closeText) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').textContent = body;
+      var actBtn = document.getElementById('modal-action-btn');
+      var clsBtn = document.getElementById('modal-close-btn');
+      if (actionText) {
+        actBtn.style.display = 'block';
+        actBtn.textContent = actionText;
+        actBtn.style.background = actionColor || '#0284c7';
+        actBtn.onclick = function() { hideModal(); if (onAction) onAction(); };
+      } else {
+        actBtn.style.display = 'none';
+      }
+      if (showClose) {
+        clsBtn.style.display = 'block';
+        clsBtn.textContent = closeText || 'Close';
+      } else {
+        clsBtn.style.display = 'none';
+      }
+      document.getElementById('popup-modal').classList.add('active');
+    }
+
+    function hideModal() {
+      document.getElementById('popup-modal').classList.remove('active');
+    }
+
     function resetSave() {
       localStorage.clear();
       lvl = 1; stars = 0; energy = 30; lastEnergyTs = Date.now();
@@ -181,7 +220,19 @@
     }
 
     function buyUpgrade(k) {
-      if (stars >= upg[k]) { stars -= upg[k]; upg[k]++; saveData(); updateUI(); }
+      if (stars >= upg[k]) {
+        stars -= upg[k]; upg[k]++; saveData(); updateUI();
+      } else {
+        showModal(
+          "Not Enough Stars ⭐️",
+          "You need " + upg[k] + " ⭐️ to upgrade this skill, but you have " + stars + " ⭐️. Watch a quick video ad to claim +3 Stars!",
+          "🎬 Watch Ad (+3 Stars ⭐️)",
+          "#d97706",
+          function() { watchRewardAd('stars'); },
+          true,
+          "Cancel"
+        );
+      }
     }
 
     var THEATRES = ["Heartland Basin", "Sunscorched Dunes", "Frostfang Tundra", "Emerald Delta", "Crimson Canyon", "Shattered Coast"];
@@ -215,12 +266,19 @@
 
     function startBattle() {
       syncEnergy();
-      var msg = document.getElementById('energy-msg');
       if (energy < ENERGY_COST) {
-        msg.textContent = "Not enough energy! Need " + ENERGY_COST + " ⚡ to invade.";
+        showModal(
+          "Out of Energy ⚡",
+          "You need " + ENERGY_COST + " ⚡ to launch an invasion. Watch a quick video ad to refill +15 Energy immediately!",
+          "🎬 Watch Ad (+15 Energy ⚡)",
+          "#0284c7",
+          function() { watchRewardAd('energy'); },
+          true,
+          "Cancel"
+        );
         return;
       }
-      msg.textContent = "";
+      document.getElementById('energy-msg').textContent = "";
       if (energy === MAX_ENERGY) lastEnergyTs = Date.now();
       energy -= ENERGY_COST;
       saveData();
@@ -229,6 +287,7 @@
 
     function openGame(id) {
       if (loop) clearInterval(loop);
+      marchQueues = [];
       document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
       document.getElementById(id).classList.add('active');
       updateUI();
@@ -274,7 +333,7 @@
       });
     }
 
-    var canvas, ctx, nodes = [], troops = [], selectedChain = [], dragPos = null, loop, aiTick = 0, won = false;
+    var canvas, ctx, nodes = [], troops = [], marchQueues = [], sparks = [], selectedChain = [], dragPos = null, loop, aiTick = 0, won = false;
     var island = [], biome = BIOMES.at(0), props = [], river = [];
 
     function initGame() {
@@ -283,8 +342,7 @@
       canvas.width = canvas.parentElement.clientWidth;
       canvas.height = canvas.parentElement.clientHeight;
       var W = canvas.width, H = canvas.height;
-      troops = []; selectedChain = []; dragPos = null; aiTick = 0; won = false;
-      document.getElementById('next-btn').style.display = 'none';
+      troops = []; marchQueues = []; sparks = []; selectedChain = []; dragPos = null; aiTick = 0; won = false;
       var name = THEATRES[(lvl - 1) % THEATRES.length];
       biome = BIOMES[(lvl - 1) % BIOMES.length];
       document.getElementById('game-status').textContent = "Lvl " + lvl + ": " + name;
@@ -362,21 +420,49 @@
     }
 
     function sendTroops(src, target) {
-      var amount = Math.floor(src.count * 0.65);
-      if (amount <= 0) return;
-      src.count -= amount;
-      var spd = (src.team === 'player' ? 3.2 + (upg.speed - 1) * 0.45 : 3.0);
-      var waves = Math.min(18, Math.max(4, Math.ceil(amount / 20)));
-      var perDot = amount / waves;
-      for (var i = 0; i < waves; i++) {
-        setTimeout(function() {
-          if (src && target) {
-            troops.push({ x: src.x + (Math.random() - 0.5) * 14, y: src.y + (Math.random() - 0.5) * 14, target: target, team: src.team, color: src.color, val: perDot, spd: spd });
-          }
-        }, i * 55);
-      }
+      var rawAmount = Math.floor(src.count * 0.65);
+      var soldiers = Math.floor(rawAmount / SOLDIER_VAL);
+      if (soldiers <= 0) return;
+      var spd = (src.team === 'player' ? 1.8 + (upg.speed - 1) * 0.45 : 1.7 + lvl * 0.05);
+      var gapTicks = src.team === 'player' ? Math.max(1, 5 - Math.floor(upg.speed / 2)) : 3;
+      marchQueues.push({
+        src: src, target: target, team: src.team, color: src.color,
+        remaining: soldiers, spd: spd, gapTicks: gapTicks, wait: 0, lane: 0
+      });
     }
 
+    function drawSoldier(tr) {
+      var angle = Math.atan2(tr.target.y - tr.y, tr.target.x - tr.x);
+      var legSwing = Math.sin(tr.step * 0.45) * 3;
+      var stab = tr.slash > 0 ? 5 : 0;
+      ctx.save();
+      ctx.translate(tr.x, tr.y);
+      ctx.rotate(angle);
+      ctx.fillStyle = "#1e293b";
+      ctx.beginPath(); ctx.arc(legSwing, -4.5, 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(-legSwing, 4.5, 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = tr.color;
+      ctx.strokeStyle = "#0f172a";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(0, 0, 6.2, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#fde68a";
+      ctx.beginPath(); ctx.arc(2, 0, 3.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#0f172a";
+      ctx.beginPath(); ctx.arc(3.5, -1.4, 0.9, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3.5, 1.4, 0.9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#92400e";
+      ctx.fillRect(4 + stab, 3.5, 3, 2);
+      ctx.fillStyle = "#f8fafc";
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      ctx.moveTo(7 + stab, 3.2);
+      ctx.lineTo(13 + stab, 4.5);
+      ctx.lineTo(7 + stab, 5.8);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
     function updateGame() {
       var W = canvas.width, H = canvas.height;
       ctx.fillStyle = "#38bdf8";
@@ -412,10 +498,31 @@
         ctx.fill();
       });
 
+      for (var q = marchQueues.length - 1; q >= 0; q--) {
+        var mq = marchQueues[q];
+        if (mq.src.team !== mq.team || mq.src.count < SOLDIER_VAL || mq.remaining <= 0) {
+          marchQueues.splice(q, 1);
+          continue;
+        }
+        if (mq.wait > 0) { mq.wait--; continue; }
+        mq.src.count -= SOLDIER_VAL;
+        mq.remaining--;
+        mq.wait = mq.gapTicks;
+        var ang = Math.atan2(mq.target.y - mq.src.y, mq.target.x - mq.src.x);
+        var perp = ((mq.lane % 3) - 1) * 7;
+        mq.lane++;
+        troops.push({
+          x: mq.src.x - Math.sin(ang) * perp,
+          y: mq.src.y + Math.cos(ang) * perp,
+          target: mq.target, team: mq.team, color: mq.color,
+          val: SOLDIER_VAL, spd: mq.spd, step: mq.lane * 3, slash: 0
+        });
+      }
+
       aiTick++;
       nodes.forEach(function(n) {
         if (n.team !== 'neutral' && n.count < n.max) {
-          var rate = n.team === 'player' ? 0.35 + (upg.repro - 1) * 0.12 : 0.32 + lvl * 0.02;
+          var rate = n.team === 'player' ? 0.32 + (upg.repro - 1) * 0.12 : 0.30 + lvl * 0.02;
           n.count = Math.min(n.max, n.count + rate);
         }
         if (n.pts.length) {
@@ -445,7 +552,7 @@
         });
       }
 
-      if (aiTick % Math.max(25, 65 - lvl * 2) === 0) {
+      if (aiTick % Math.max(30, 75 - lvl * 2) === 0) {
         ['blue', 'red'].forEach(function(t) {
           var aiNodes = nodes.filter(function(n) { return n.team === t && n.count > 120; });
           if (aiNodes.length) {
@@ -458,46 +565,96 @@
           }
         });
       }
+
+      for (var i = troops.length - 1; i >= 0; i--) {
+        var a = troops[i];
+        if (!a || a.dead) continue;
+        for (var j = i - 1; j >= 0; j--) {
+          var b = troops[j];
+          if (!b || b.dead || a.team === b.team) continue;
+          if (Math.hypot(a.x - b.x, a.y - b.y) < 15) {
+            a.dead = true; b.dead = true;
+            sparks.push({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, life: 8 });
+            break;
+          }
+        }
+      }
+      troops = troops.filter(function(tr) { return !tr.dead; });
+
       for (var i = troops.length - 1; i >= 0; i--) {
         var tr = troops[i], dx = tr.target.x - tr.x, dy = tr.target.y - tr.y, dist = Math.hypot(dx, dy);
-        if (dist < 18) {
-          if (tr.target.team === tr.team) tr.target.count = Math.min(tr.target.max, tr.target.count + tr.val);
-          else {
+        if (dist < 28 && tr.target.team !== tr.team) tr.slash = 4;
+        if (dist < 19) {
+          if (tr.target.team === tr.team) {
+            tr.target.count = Math.min(tr.target.max, tr.target.count + tr.val);
+          } else {
+            sparks.push({ x: tr.x, y: tr.y, life: 6 });
             tr.target.count -= tr.val;
-            if (tr.target.count <= 0) { tr.target.count = Math.abs(tr.target.count) + 15; tr.target.team = tr.team; tr.target.color = tr.color; }
+            if (tr.target.count <= 0) {
+              tr.target.count = Math.abs(tr.target.count) + 10;
+              tr.target.team = tr.team;
+              tr.target.color = tr.color;
+            }
           }
-          troops.splice(i, 1); continue;
+          troops.splice(i, 1);
+          continue;
         }
-        tr.x += (dx / dist) * tr.spd; tr.y += (dy / dist) * tr.spd;
-        ctx.beginPath(); ctx.arc(tr.x, tr.y, 4.5, 0, Math.PI * 2);
-        ctx.fillStyle = tr.color; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = "#fff"; ctx.stroke();
+        tr.x += (dx / dist) * tr.spd;
+        tr.y += (dy / dist) * tr.spd;
+        tr.step++;
+        if (tr.slash > 0) tr.slash--;
+        drawSoldier(tr);
+      }
+
+      for (var s = sparks.length - 1; s >= 0; s--) {
+        var sp = sparks[s];
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sp.x - 6, sp.y - 6); ctx.lineTo(sp.x + 6, sp.y + 6);
+        ctx.moveTo(sp.x + 6, sp.y - 6); ctx.lineTo(sp.x - 6, sp.y + 6);
+        ctx.stroke();
+        sp.life--;
+        if (sp.life <= 0) sparks.splice(s, 1);
       }
 
       var playerAlive = nodes.some(function(n) { return n.team === 'player'; }) || troops.some(function(t) { return t.team === 'player'; });
       var enemyAlive = nodes.some(function(n) { return n.team === 'blue' || n.team === 'red'; }) || troops.some(function(t) { return t.team === 'blue' || t.team === 'red'; });
 
       if (!won && !enemyAlive && playerAlive) {
-        won = true; clearInterval(loop); stars += 2 + Math.floor(lvl / 3); lvl++; saveData();
-        document.getElementById('game-status').textContent = "VICTORY! Theatre Conquered!";
-        document.getElementById('next-btn').style.display = 'inline-block';
+        won = true; clearInterval(loop); marchQueues = [];
+        var earned = 2 + Math.floor(lvl / 3);
+        stars += earned; lvl++; saveData();
+        showModal("VICTORY! 🎉", "Theatre conquered! You earned +" + earned + " ⭐️ for your empire.", null, null, null, true, "Return to Lobby");
+        document.getElementById('modal-close-btn').onclick = function() { hideModal(); openGame('lobby-page'); };
       } else if (!won && !playerAlive) {
-        won = true; clearInterval(loop);
-        document.getElementById('game-status').textContent = "DEFEAT! Forces Overrun.";
+        won = true; clearInterval(loop); marchQueues = [];
+        showModal("DEFEAT 💀", "Your forces were overrun! Upgrade your skills in the lobby and try again.", null, null, null, true, "Return to Lobby");
+        document.getElementById('modal-close-btn').onclick = function() { hideModal(); openGame('lobby-page'); };
       }
     }
 
     var AdMobPlugin = window.Capacitor && window.Capacitor.registerPlugin ? window.Capacitor.registerPlugin('AdMob') : (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob);
     var REWARDED_AD_ID = 'ca-app-pub-4888916688985697/3721133365';
-    if (AdMobPlugin && AdMobPlugin.initialize) {
-      try { AdMobPlugin.initialize({ initializeForTesting: true }); } catch (e) {}
+    var admobReady = false;
+
+    async function initAdMob() {
+      if (AdMobPlugin && AdMobPlugin.initialize) {
+        try {
+          await AdMobPlugin.initialize({ testingDevices: [], initializeForTesting: true });
+          admobReady = true;
+        } catch (e) {}
+      }
     }
+    initAdMob();
 
     async function watchRewardAd(rewardType) {
       var msg = document.getElementById('energy-msg');
       msg.style.color = "#0284c7"; msg.textContent = "Loading video ad...";
       if (AdMobPlugin && AdMobPlugin.prepareRewardVideoAd) {
         try {
-          await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID });
+          if (!admobReady) await initAdMob();
+          await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID, isTesting: true });
           var rewardItem = await AdMobPlugin.showRewardVideoAd();
           if (rewardItem) {
             if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
@@ -505,31 +662,27 @@
             saveData(); updateUI();
           }
         } catch (err) {
-          msg.style.color = "#dc2626"; msg.textContent = "Ad loading... tap again in 3s!";
+          msg.style.color = "#dc2626";
+          msg.textContent = "Test ad unavailable (" + (err && err.message ? err.message : "check network") + ")";
         }
       } else {
         setTimeout(function() {
           if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
           else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
           saveData(); updateUI();
-        }, 1500);
+        }, 1200);
       }
     }
 
     document.getElementById('invade-btn').addEventListener('click', startBattle);
     document.getElementById('lobby-btn').addEventListener('click', function() { openGame('lobby-page'); });
-    document.getElementById('next-btn').addEventListener('click', startBattle);
     document.getElementById('reset-btn').addEventListener('click', resetSave);
+    document.getElementById('modal-close-btn').addEventListener('click', hideModal);
     document.getElementById('ad-energy-btn').addEventListener('click', function() { watchRewardAd('energy'); });
     document.getElementById('ad-stars-btn').addEventListener('click', function() { watchRewardAd('stars'); });
     document.getElementById('btn-speed').addEventListener('click', function() { buyUpgrade('speed'); });
     document.getElementById('btn-repro').addEventListener('click', function() { buyUpgrade('repro'); });
     document.getElementById('btn-cap').addEventListener('click', function() { buyUpgrade('cap'); });
     document.getElementById('btn-start').addEventListener('click', function() { buyUpgrade('start'); });
-
-    loadData();
-    updateUI();
-  </script>
-</body>
-</html>
-
+loadData();
+updateUI();
