@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Global Takeover</title>
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
     html, body {
       margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -27,9 +27,7 @@
     .sub-title {
       text-align: center; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 12px;
     }
-    .stats-bar {
-      display: flex; justify-content: center; gap: 10px; margin-bottom: 8px;
-    }
+    .stats-bar { display: flex; justify-content: center; gap: 10px; margin-bottom: 8px; }
     .pill {
       background: #ffffff; padding: 6px 14px; border-radius: 999px;
       font-size: 13px; font-weight: 800; color: #0f172a;
@@ -39,12 +37,11 @@
       text-align: center; font-size: 11px; font-weight: 800; color: #475569;
       letter-spacing: 1px; margin: 14px 0 10px 0; text-transform: uppercase;
     }
-    .upg-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    }
+    .upg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    button { cursor: pointer; touch-action: manipulation; font-family: inherit; }
     .upg-btn {
       background: #ffffff; border: 2px solid #e2e8f0; border-radius: 16px;
-      padding: 14px 10px; text-align: center; cursor: pointer;
+      padding: 14px 10px; text-align: center;
       box-shadow: 0 3px 8px rgba(15,23,42,0.06);
     }
     .upg-btn:active { transform: scale(0.97); }
@@ -52,7 +49,7 @@
     .upg-cost { font-size: 12px; font-weight: 700; color: #d97706; }
     .go-btn {
       width: 100%; background: #16a34a; color: #ffffff; font-size: 18px; font-weight: 900;
-      padding: 16px; border: none; border-radius: 18px; cursor: pointer;
+      padding: 16px; border: none; border-radius: 18px;
       box-shadow: 0 6px 14px rgba(22,163,74,0.3);
     }
     .go-btn:active { transform: scale(0.98); }
@@ -63,11 +60,11 @@
       pointer-events: none;
     }
     .hud-btn {
-      pointer-events: auto; background: rgba(15,23,42,0.8); color: #fff;
-      border: none; border-radius: 12px; padding: 8px 14px; font-size: 13px; font-weight: 800;
+      pointer-events: auto; background: rgba(15,23,42,0.85); color: #fff;
+      border: none; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 800;
     }
     #game-status {
-      background: rgba(255,255,255,0.9); color: #0f172a; padding: 8px 14px;
+      background: rgba(255,255,255,0.92); color: #0f172a; padding: 8px 14px;
       border-radius: 12px; font-size: 13px; font-weight: 800;
     }
     #next-btn {
@@ -81,11 +78,9 @@
 </head>
 <body>
   <div id="app-container">
-    <!-- LOBBY PAGE -->
     <div id="lobby-page" class="page active">
       <div class="header-title">Global Takeover 🌍</div>
       <div id="region-preview" class="sub-title">Next Theatre: Heartland Basin</div>
-
       <div class="stats-bar">
         <div class="pill">⭐️ <span id="menu-stars">0</span></div>
         <div class="pill">⚡ <span id="menu-energy">30</span>/30 <span id="energy-timer" style="font-size:11px; color:#64748b;">(Full)</span></div>
@@ -93,53 +88,448 @@
       <div style="text-align:center; font-size:12px; font-weight:700; color:#475569;">
         Levels Cleared: <span id="highest-lvl">0</span>
       </div>
-
       <div class="section-label">Upgrade Skills</div>
       <div class="upg-grid">
-        <button class="upg-btn" onclick="buyUpgrade('speed')">
+        <button id="btn-speed" class="upg-btn" type="button">
           <div class="upg-name">👟 Speed: Lvl <span id="lvl-speed">1</span></div>
           <div class="upg-cost">Need <span id="cost-speed">1</span> ⭐️</div>
         </button>
-        <button class="upg-btn" onclick="buyUpgrade('repro')">
+        <button id="btn-repro" class="upg-btn" type="button">
           <div class="upg-name">🌱 Growth: Lvl <span id="lvl-repro">1</span></div>
           <div class="upg-cost">Need <span id="cost-repro">1</span> ⭐️</div>
         </button>
-        <button class="upg-btn" onclick="buyUpgrade('cap')">
+        <button id="btn-cap" class="upg-btn" type="button">
           <div class="upg-name">🏰 Max Cap: Lvl <span id="lvl-cap">1</span></div>
           <div class="upg-cost">Need <span id="cost-cap">1</span> ⭐️</div>
         </button>
-        <button class="upg-btn" onclick="buyUpgrade('start')">
+        <button id="btn-start" class="upg-btn" type="button">
           <div class="upg-name">⚔️ Start Army: Lvl <span id="lvl-start">1</span></div>
           <div class="upg-cost">Need <span id="cost-start">1</span> ⭐️</div>
         </button>
       </div>
-
       <div style="margin-top:auto; margin-bottom:14px; text-align:center;">
-        <button id="invade-btn" class="go-btn" onclick="startBattle()">INVADE LVL <span id="next-lvl-btn">1</span> (-3 ⚡)</button>
+        <button id="invade-btn" class="go-btn" type="button">INVADE LVL <span id="next-lvl-btn">1</span> (-3 ⚡)</button>
         <div style="display:flex; gap:8px; margin-top:10px;">
-          <button onclick="watchRewardAd('energy')" style="flex:1; background:#0284c7; color:#fff; font-size:13px; font-weight:800; padding:14px 6px; border:none; border-radius:14px;">
+          <button id="ad-energy-btn" type="button" style="flex:1; background:#0284c7; color:#fff; font-size:13px; font-weight:800; padding:14px 6px; border:none; border-radius:14px;">
             🎬 +15 Energy ⚡
           </button>
-          <button onclick="watchRewardAd('stars')" style="flex:1; background:#d97706; color:#fff; font-size:13px; font-weight:800; padding:14px 6px; border:none; border-radius:14px;">
+          <button id="ad-stars-btn" type="button" style="flex:1; background:#d97706; color:#fff; font-size:13px; font-weight:800; padding:14px 6px; border:none; border-radius:14px;">
             🎬 +3 Stars ⭐️
           </button>
         </div>
         <p id="energy-msg" style="font-size:12px; color:#dc2626; font-weight:700; margin:8px 0 0 0; min-height:16px;"></p>
-        <button onclick="resetSave()" style="font-size:11px; color:#ef4444; font-weight:700; background:none; border:none; text-decoration:underline; margin-top:4px;">Reset Saved Data</button>
+        <button id="reset-btn" type="button" style="font-size:11px; color:#ef4444; font-weight:700; background:none; border:none; text-decoration:underline; margin-top:4px;">Reset Saved Data</button>
       </div>
     </div>
 
-    <!-- BATTLE PAGE -->
     <div id="state-page" class="page">
       <div id="top-hud">
-        <button class="hud-btn" onclick="openGame('lobby-page')">← Lobby</button>
+        <button id="lobby-btn" class="hud-btn" type="button">← Lobby</button>
         <div id="game-status">Lvl 1</div>
       </div>
       <canvas id="stateCanvas"></canvas>
-      <button id="next-btn" onclick="nextLevel()">NEXT THEATRE →</button>
+      <button id="next-btn" type="button">NEXT THEATRE →</button>
     </div>
   </div>
+  <script>
+    window.onerror = function(msg, url, line) {
+      var el = document.getElementById('energy-msg');
+      if (el) el.textContent = "Err L" + line + ": " + msg;
+    };
 
-  <script src="app.js"></script>
+    var lvl = 1, stars = 0, upg = { speed: 1, repro: 1, cap: 1, start: 1 };
+    var energy = 30, lastEnergyTs = Date.now();
+    var MAX_ENERGY = 30, ENERGY_COST = 3, RECOVER_MS = 180000;
+
+    function loadData() {
+      try {
+        if (localStorage.getItem('gt_lvl')) lvl = +localStorage.getItem('gt_lvl');
+        if (localStorage.getItem('gt_stars')) stars = +localStorage.getItem('gt_stars');
+        if (localStorage.getItem('gt_upg')) upg = JSON.parse(localStorage.getItem('gt_upg'));
+        if (localStorage.getItem('gt_nrg') !== null) energy = +localStorage.getItem('gt_nrg');
+        if (localStorage.getItem('gt_ts')) lastEnergyTs = +localStorage.getItem('gt_ts');
+      } catch (e) {}
+      syncEnergy();
+    }
+
+    function saveData() {
+      try {
+        localStorage.setItem('gt_lvl', lvl);
+        localStorage.setItem('gt_stars', stars);
+        localStorage.setItem('gt_upg', JSON.stringify(upg));
+        localStorage.setItem('gt_nrg', energy);
+        localStorage.setItem('gt_ts', lastEnergyTs);
+      } catch (e) {}
+    }
+
+    function syncEnergy() {
+      if (energy >= MAX_ENERGY) { energy = MAX_ENERGY; lastEnergyTs = Date.now(); return; }
+      var now = Date.now(), elapsed = now - lastEnergyTs;
+      if (elapsed >= RECOVER_MS) {
+        var gained = Math.floor(elapsed / RECOVER_MS);
+        energy = Math.min(MAX_ENERGY, energy + gained);
+        lastEnergyTs = energy >= MAX_ENERGY ? now : lastEnergyTs + gained * RECOVER_MS;
+        saveData();
+      }
+    }
+
+    function resetSave() {
+      localStorage.clear();
+      lvl = 1; stars = 0; energy = 30; lastEnergyTs = Date.now();
+      upg = { speed: 1, repro: 1, cap: 1, start: 1 };
+      saveData(); updateUI();
+    }
+
+    function buyUpgrade(k) {
+      if (stars >= upg[k]) { stars -= upg[k]; upg[k]++; saveData(); updateUI(); }
+    }
+
+    var THEATRES = ["Heartland Basin", "Sunscorched Dunes", "Frostfang Tundra", "Emerald Delta", "Crimson Canyon", "Shattered Coast"];
+    var BIOMES = [
+      { bg: "#86efac", shore: "#fef08a", accent: "#22c55e", type: "grass" },
+      { bg: "#fde047", shore: "#fef9c3", accent: "#eab308", type: "desert" },
+      { bg: "#e2e8f0", shore: "#f8fafc", accent: "#94a3b8", type: "tundra" }
+    ];
+
+    function updateUI() {
+      syncEnergy();
+      document.getElementById('menu-stars').textContent = stars;
+      document.getElementById('menu-energy').textContent = energy;
+      document.getElementById('highest-lvl').textContent = lvl - 1;
+      document.getElementById('next-lvl-btn').textContent = lvl;
+      document.getElementById('region-preview').textContent = "Next Theatre: " + THEATRES[(lvl - 1) % THEATRES.length];
+      var timerEl = document.getElementById('energy-timer');
+      if (energy >= MAX_ENERGY) {
+        timerEl.textContent = "(Full)";
+      } else {
+        var rem = Math.max(0, RECOVER_MS - (Date.now() - lastEnergyTs));
+        var m = Math.floor(rem / 60000), s = Math.floor((rem % 60000) / 1000);
+        timerEl.textContent = "(+1 in " + m + ":" + (s < 10 ? "0" : "") + s + ")";
+      }
+      ['speed', 'repro', 'cap', 'start'].forEach(function(k) {
+        document.getElementById('lvl-' + k).textContent = upg[k];
+        document.getElementById('cost-' + k).textContent = upg[k];
+      });
+    }
+    setInterval(updateUI, 1000);
+
+    function startBattle() {
+      syncEnergy();
+      var msg = document.getElementById('energy-msg');
+      if (energy < ENERGY_COST) {
+        msg.textContent = "Not enough energy! Need " + ENERGY_COST + " ⚡ to invade.";
+        return;
+      }
+      msg.textContent = "";
+      if (energy === MAX_ENERGY) lastEnergyTs = Date.now();
+      energy -= ENERGY_COST;
+      saveData();
+      openGame('state-page');
+    }
+
+    function openGame(id) {
+      if (loop) clearInterval(loop);
+      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById(id).classList.add('active');
+      updateUI();
+      if (id === 'state-page') setTimeout(initGame, 50);
+    }
+    function pointInPoly(pt, vs) {
+      var x = pt.x, y = pt.y, inside = false;
+      for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        var xi = vs[i].x, yi = vs[i].y, xj = vs[j].x, yj = vs[j].y;
+        if (((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) inside = !inside;
+      }
+      return inside;
+    }
+
+    function makeContinent(W, H) {
+      var pts = [], steps = 28, p1 = Math.random() * 6, p2 = Math.random() * 6, p3 = Math.random() * 6;
+      for (var i = 0; i < steps; i++) {
+        var a = (i / steps) * Math.PI * 2;
+        var r = 0.39 + 0.05 * Math.sin(a * 3 + p1) + 0.035 * Math.cos(a * 5 + p2) + 0.02 * Math.sin(a * 7 + p3);
+        pts.push({ x: (0.5 + Math.cos(a) * r) * W, y: (0.5 + Math.sin(a) * r) * H });
+      }
+      return pts;
+    }
+
+    function carveMap(seeds, islandPoly) {
+      return seeds.map(function(s, idx) {
+        var poly = islandPoly.map(function(p) { return { x: p.x, y: p.y }; });
+        seeds.forEach(function(o, j) {
+          if (idx === j) return;
+          var mx = (s.x + o.x) / 2, my = (s.y + o.y) / 2, nx = o.x - s.x, ny = o.y - s.y, out = [];
+          for (var i = 0; i < poly.length; i++) {
+            var a = poly[i], b = poly[(i + 1) % poly.length];
+            var da = (a.x - mx) * nx + (a.y - my) * ny, db = (b.x - mx) * nx + (b.y - my) * ny;
+            if (da <= 0) out.push(a);
+            if ((da < 0 && db > 0) || (da > 0 && db < 0)) {
+              var t = da / (da - db);
+              out.push({ x: a.x + t * (b.x - a.x), y: a.y + t * (b.y - a.y) });
+            }
+          }
+          poly = out;
+        });
+        return poly;
+      });
+    }
+
+    var canvas, ctx, nodes = [], troops = [], selectedChain = [], dragPos = null, loop, aiTick = 0, won = false;
+    var island = [], biome = BIOMES.at(0), props = [], river = [];
+
+    function initGame() {
+      canvas = document.getElementById('stateCanvas');
+      ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      var W = canvas.width, H = canvas.height;
+      troops = []; selectedChain = []; dragPos = null; aiTick = 0; won = false;
+      document.getElementById('next-btn').style.display = 'none';
+      var name = THEATRES[(lvl - 1) % THEATRES.length];
+      biome = BIOMES[(lvl - 1) % BIOMES.length];
+      document.getElementById('game-status').textContent = "Lvl " + lvl + ": " + name;
+      island = makeContinent(W, H);
+
+      var rAng = Math.random() * Math.PI * 2, rPhase = Math.random() * 6;
+      river = [];
+      for (var i = 0; i <= 20; i++) {
+        var t = (i / 20) - 0.5, perp = Math.sin(t * 9 + rPhase) * 0.06;
+        river.push({ x: (0.5 + t * Math.cos(rAng) - perp * Math.sin(rAng)) * W, y: (0.5 + t * Math.sin(rAng) + perp * Math.cos(rAng)) * H });
+      }
+
+      props = [];
+      for (var i = 0; i < 36; i++) {
+        var px = (0.15 + Math.random() * 0.7) * W, py = (0.15 + Math.random() * 0.7) * H;
+        if (pointInPoly({ x: px, y: py }, island)) props.push({ x: px, y: py, kind: i % 4 === 0 ? 'mtn' : 'flora', sz: 4 + Math.random() * 4 });
+      }
+
+      var count = Math.min(8, 5 + Math.floor(lvl / 2)), rot = Math.random() * Math.PI * 2, seeds = [];
+      for (var i = 0; i < count; i++) {
+        var ang = rot + (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
+        var rad = i === 0 ? 0.05 : 0.23 + Math.random() * 0.06;
+        seeds.push({ x: (0.5 + Math.cos(ang) * rad) * W, y: (0.5 + Math.sin(ang) * rad) * H });
+      }
+
+      var polys = carveMap(seeds, island);
+      var indices = seeds.map(function(_, i) { return i; }).sort(function() { return Math.random() - 0.5; });
+      var enemyCount = Math.min(3, 1 + Math.floor(lvl / 2));
+
+      nodes = seeds.map(function(s, i) {
+        var pts = polys[i];
+        var cx = pts.length ? pts.reduce(function(sum, p) { return sum + p.x; }, 0) / pts.length : s.x;
+        var cy = pts.length ? pts.reduce(function(sum, p) { return sum + p.y; }, 0) / pts.length : s.y;
+        var rank = indices.indexOf(i), team = 'neutral', color = '#64748b', cnt = 120 + Math.floor(Math.random() * 90), max = 600;
+        if (rank === 0) { team = 'player'; color = '#eab308'; cnt = 400 + (upg.start - 1) * 120; max = 1000 + (upg.cap - 1) * 250; }
+        else if (rank <= enemyCount) { team = rank % 2 === 1 ? 'blue' : 'red'; color = team === 'blue' ? '#3b82f6' : '#ef4444'; cnt = 300 + lvl * 25; max = 1000 + lvl * 50; }
+        return { id: i, x: cx, y: cy, pts: pts, team: team, color: color, count: cnt, max: max };
+      });
+
+      function getHitNode(pt) {
+        return nodes.find(function(n) { return (n.pts.length && pointInPoly(pt, n.pts)) || Math.hypot(n.x - pt.x, n.y - pt.y) < 35; });
+      }
+
+      canvas.ontouchstart = function(e) {
+        e.preventDefault();
+        var t = e.touches && e.touches.item(0);
+        if (!t) return;
+        var r = canvas.getBoundingClientRect();
+        var pt = { x: t.clientX - r.left, y: t.clientY - r.top };
+        var hit = getHitNode(pt);
+        if (hit && hit.team === 'player') { selectedChain = [hit]; dragPos = pt; }
+      };
+
+      canvas.ontouchmove = function(e) {
+        e.preventDefault();
+        var t = e.touches && e.touches.item(0);
+        if (!selectedChain.length || !t) return;
+        var r = canvas.getBoundingClientRect();
+        dragPos = { x: t.clientX - r.left, y: t.clientY - r.top };
+        var hit = getHitNode(dragPos);
+        if (hit && hit.team === 'player' && !selectedChain.includes(hit)) selectedChain.push(hit);
+      };
+
+      canvas.ontouchend = function(e) {
+        e.preventDefault();
+        if (selectedChain.length && dragPos) {
+          var target = getHitNode(dragPos);
+          if (target) selectedChain.forEach(function(src) { if (src !== target) sendTroops(src, target); });
+        }
+        selectedChain = []; dragPos = null;
+      };
+
+      if (loop) clearInterval(loop);
+      loop = setInterval(updateGame, 40);
+    }
+
+    function sendTroops(src, target) {
+      var amount = Math.floor(src.count * 0.65);
+      if (amount <= 0) return;
+      src.count -= amount;
+      var spd = (src.team === 'player' ? 3.2 + (upg.speed - 1) * 0.45 : 3.0);
+      var waves = Math.min(18, Math.max(4, Math.ceil(amount / 20)));
+      var perDot = amount / waves;
+      for (var i = 0; i < waves; i++) {
+        setTimeout(function() {
+          if (src && target) {
+            troops.push({ x: src.x + (Math.random() - 0.5) * 14, y: src.y + (Math.random() - 0.5) * 14, target: target, team: src.team, color: src.color, val: perDot, spd: spd });
+          }
+        }, i * 55);
+      }
+    }
+
+    function updateGame() {
+      var W = canvas.width, H = canvas.height;
+      ctx.fillStyle = "#38bdf8";
+      ctx.fillRect(0, 0, W, H);
+
+      if (island.length) {
+        ctx.beginPath();
+        island.forEach(function(p, i) { i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
+        ctx.closePath();
+        ctx.lineWidth = 18; ctx.strokeStyle = biome.shore; ctx.stroke();
+        ctx.fillStyle = biome.bg; ctx.fill();
+      }
+
+      if (river.length) {
+        ctx.save();
+        ctx.beginPath();
+        island.forEach(function(p, i) { i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
+        ctx.clip();
+        ctx.beginPath();
+        river.forEach(function(p, i) { i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
+        ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 9; ctx.lineCap = "round"; ctx.stroke();
+        ctx.restore();
+      }
+
+      props.forEach(function(pr) {
+        ctx.fillStyle = pr.kind === 'mtn' ? "rgba(100,116,139,0.35)" : biome.accent;
+        ctx.beginPath();
+        if (pr.kind === 'mtn') {
+          ctx.moveTo(pr.x, pr.y - pr.sz); ctx.lineTo(pr.x + pr.sz, pr.y + pr.sz); ctx.lineTo(pr.x - pr.sz, pr.y + pr.sz);
+        } else {
+          ctx.arc(pr.x, pr.y, pr.sz * 0.65, 0, Math.PI * 2);
+        }
+        ctx.fill();
+      });
+
+      aiTick++;
+      nodes.forEach(function(n) {
+        if (n.team !== 'neutral' && n.count < n.max) {
+          var rate = n.team === 'player' ? 0.35 + (upg.repro - 1) * 0.12 : 0.32 + lvl * 0.02;
+          n.count = Math.min(n.max, n.count + rate);
+        }
+        if (n.pts.length) {
+          ctx.beginPath();
+          n.pts.forEach(function(p, i) { i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
+          ctx.closePath();
+          ctx.fillStyle = n.team === 'neutral' ? 'rgba(255,255,255,0.22)' : n.color + '55';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = n.team === 'neutral' ? 'rgba(15,23,42,0.25)' : n.color;
+          ctx.stroke();
+        }
+        ctx.beginPath(); ctx.arc(n.x, n.y, 20, 0, Math.PI * 2);
+        ctx.fillStyle = n.color; ctx.fill();
+        ctx.lineWidth = selectedChain.includes(n) ? 4 : 2.5;
+        ctx.strokeStyle = selectedChain.includes(n) ? "#ffffff" : "#0f172a"; ctx.stroke();
+        ctx.fillStyle = "#ffffff"; ctx.font = "800 13px sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(Math.floor(n.count), n.x, n.y);
+      });
+
+      if (selectedChain.length && dragPos) {
+        selectedChain.forEach(function(src) {
+          ctx.beginPath(); ctx.moveTo(src.x, src.y); ctx.lineTo(dragPos.x, dragPos.y);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.85)"; ctx.lineWidth = 4;
+          ctx.stroke();
+        });
+      }
+
+      if (aiTick % Math.max(25, 65 - lvl * 2) === 0) {
+        ['blue', 'red'].forEach(function(t) {
+          var aiNodes = nodes.filter(function(n) { return n.team === t && n.count > 120; });
+          if (aiNodes.length) {
+            var src = aiNodes[Math.floor(Math.random() * aiNodes.length)];
+            var targets = nodes.filter(function(n) { return n.team !== t; });
+            if (targets.length) {
+              targets.sort(function(a, b) { return a.count - b.count; });
+              sendTroops(src, targets.at(0));
+            }
+          }
+        });
+      }
+      for (var i = troops.length - 1; i >= 0; i--) {
+        var tr = troops[i], dx = tr.target.x - tr.x, dy = tr.target.y - tr.y, dist = Math.hypot(dx, dy);
+        if (dist < 18) {
+          if (tr.target.team === tr.team) tr.target.count = Math.min(tr.target.max, tr.target.count + tr.val);
+          else {
+            tr.target.count -= tr.val;
+            if (tr.target.count <= 0) { tr.target.count = Math.abs(tr.target.count) + 15; tr.target.team = tr.team; tr.target.color = tr.color; }
+          }
+          troops.splice(i, 1); continue;
+        }
+        tr.x += (dx / dist) * tr.spd; tr.y += (dy / dist) * tr.spd;
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = tr.color; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = "#fff"; ctx.stroke();
+      }
+
+      var playerAlive = nodes.some(function(n) { return n.team === 'player'; }) || troops.some(function(t) { return t.team === 'player'; });
+      var enemyAlive = nodes.some(function(n) { return n.team === 'blue' || n.team === 'red'; }) || troops.some(function(t) { return t.team === 'blue' || t.team === 'red'; });
+
+      if (!won && !enemyAlive && playerAlive) {
+        won = true; clearInterval(loop); stars += 2 + Math.floor(lvl / 3); lvl++; saveData();
+        document.getElementById('game-status').textContent = "VICTORY! Theatre Conquered!";
+        document.getElementById('next-btn').style.display = 'inline-block';
+      } else if (!won && !playerAlive) {
+        won = true; clearInterval(loop);
+        document.getElementById('game-status').textContent = "DEFEAT! Forces Overrun.";
+      }
+    }
+
+    var AdMobPlugin = window.Capacitor && window.Capacitor.registerPlugin ? window.Capacitor.registerPlugin('AdMob') : (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob);
+    var REWARDED_AD_ID = 'ca-app-pub-4888916688985697/3721133365';
+    if (AdMobPlugin && AdMobPlugin.initialize) {
+      try { AdMobPlugin.initialize({ initializeForTesting: true }); } catch (e) {}
+    }
+
+    async function watchRewardAd(rewardType) {
+      var msg = document.getElementById('energy-msg');
+      msg.style.color = "#0284c7"; msg.textContent = "Loading video ad...";
+      if (AdMobPlugin && AdMobPlugin.prepareRewardVideoAd) {
+        try {
+          await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID });
+          var rewardItem = await AdMobPlugin.showRewardVideoAd();
+          if (rewardItem) {
+            if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
+            else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
+            saveData(); updateUI();
+          }
+        } catch (err) {
+          msg.style.color = "#dc2626"; msg.textContent = "Ad loading... tap again in 3s!";
+        }
+      } else {
+        setTimeout(function() {
+          if (rewardType === 'energy') { energy = Math.min(MAX_ENERGY, energy + 15); msg.textContent = "Reward claimed: +15 Energy! ⚡"; }
+          else if (rewardType === 'stars') { stars += 3; msg.textContent = "Reward claimed: +3 Stars! ⭐️"; }
+          saveData(); updateUI();
+        }, 1500);
+      }
+    }
+
+    document.getElementById('invade-btn').addEventListener('click', startBattle);
+    document.getElementById('lobby-btn').addEventListener('click', function() { openGame('lobby-page'); });
+    document.getElementById('next-btn').addEventListener('click', startBattle);
+    document.getElementById('reset-btn').addEventListener('click', resetSave);
+    document.getElementById('ad-energy-btn').addEventListener('click', function() { watchRewardAd('energy'); });
+    document.getElementById('ad-stars-btn').addEventListener('click', function() { watchRewardAd('stars'); });
+    document.getElementById('btn-speed').addEventListener('click', function() { buyUpgrade('speed'); });
+    document.getElementById('btn-repro').addEventListener('click', function() { buyUpgrade('repro'); });
+    document.getElementById('btn-cap').addEventListener('click', function() { buyUpgrade('cap'); });
+    document.getElementById('btn-start').addEventListener('click', function() { buyUpgrade('start'); });
+
+    loadData();
+    updateUI();
+  </script>
 </body>
 </html>
+
