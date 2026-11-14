@@ -365,15 +365,18 @@ window.nextLevel = function() { startBattle(); };
 loadData();
 updateUI();
 
-const AdMobPlugin = window.Capacitor?.Plugins?.AdMob;
+const AdMobPlugin = window.Capacitor?.registerPlugin ? window.Capacitor.registerPlugin('AdMob') : window.Capacitor?.Plugins?.AdMob;
 const REWARDED_AD_ID = 'ca-app-pub-4888916688985697/3721133365';
 
-if (AdMobPlugin) { AdMobPlugin.initialize({ initializeForTesting: true }); }
+if (AdMobPlugin && AdMobPlugin.initialize) {
+  AdMobPlugin.initialize({ initializeForTesting: true }).catch(() => {});
+}
 
 window.watchRewardAd = async function(rewardType) {
   let msg = document.getElementById('energy-msg');
-  msg.style.color = "#0284c7"; msg.textContent = "Loading video ad...";
-  if (AdMobPlugin) {
+  msg.style.color = "#0284c7";
+  msg.textContent = "Loading video ad...";
+  if (AdMobPlugin && AdMobPlugin.prepareRewardVideoAd) {
     try {
       await AdMobPlugin.prepareRewardVideoAd({ adId: REWARDED_AD_ID });
       const rewardItem = await AdMobPlugin.showRewardVideoAd();
@@ -383,7 +386,8 @@ window.watchRewardAd = async function(rewardType) {
         saveData(); updateUI();
       }
     } catch (err) {
-      msg.style.color = "#dc2626"; msg.textContent = "Ad not ready yet. Try again in a moment!";
+      msg.style.color = "#dc2626";
+      msg.textContent = "Ad loading... tap again in 3s!";
     }
   } else {
     setTimeout(() => {
@@ -393,3 +397,10 @@ window.watchRewardAd = async function(rewardType) {
     }, 1500);
   }
 };
+
+document.addEventListener('DOMContentLoaded', () => {
+  const invadeBtn = document.getElementById('invade-btn');
+  if (invadeBtn) invadeBtn.addEventListener('click', window.startBattle);
+  const nextBtn = document.getElementById('next-btn');
+  if (nextBtn) nextBtn.addEventListener('click', window.nextLevel);
+});
